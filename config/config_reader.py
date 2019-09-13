@@ -25,3 +25,11 @@ def get_db_host():
 
 def get_db_port():
 	return int(get_config_parser().get('db', 'port'))
+
+
+def get_stepic_oauth_client_id():
+	return get_config_parser().get('stepic_oauth', 'client_id')
+
+
+def get_stepic_oauth_client_secret():
+	return get_config_parser().get('stepic_oauth', 'client_secret')

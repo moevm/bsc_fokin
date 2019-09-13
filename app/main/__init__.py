@@ -2,4 +2,4 @@ from flask import Blueprint
 
 main = Blueprint('main', __name__)
 
-from app.main import views, models, errors, stepic, spreadsheet
+from app.main import views, models, errors, stepic

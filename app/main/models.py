@@ -8,9 +8,13 @@ class Teacher(UserMixin, db.Document):
 	stepic_id = db.StringField(unique=True)
 	full_name = db.StringField(default='')
 	avatar_url = db.StringField(default='')
+	course_list = db.ListField(default=[])
 
 	def get_id(self):
 		return str(self._id)
+
+	def get_info(self):
+		return self.to_json()
 
 
 class Course(db.Document):
@@ -24,22 +28,6 @@ class Course(db.Document):
 	cert_dist_threshold = db.IntField(default=0)
 	score = db.IntField(default=0)
 	steps = db.ListField(default=[])
-	labs = db.DictField(default={})
-
-
-class Group(db.Document):
-	_id = db.ObjectIdField()
-	serial_id = db.SequenceField()
-	course_id = db.StringField(unique_with='title')
-	class_id = db.StringField(default='')
-	title = db.StringField(default='')
-	students = db.DictField(default={})
-	learners = db.IntField(default=0)
-	certificates = db.IntField(default=0)
-	cert_reg = db.IntField(default=0)
-	cert_dist = db.IntField(default=0)
-	steps = db.DictField(default={})
-	labs = db.DictField(default={})
 
 
 @login_manager.user_loader
