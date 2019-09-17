@@ -1,50 +1,71 @@
 <!DOCTYPE html>
 <html lang="ru">
-	<head>
-		<meta charset="UTF-8">
-		<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-		<link rel="stylesheet"
-			  href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
-			  integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T"
-			  crossorigin="anonymous">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-		<title>
-			{% block title %} Диплом {% endblock %}
-		</title>
+	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
 
-		{% block extra_css %} {% endblock %}
-		{% block extra_javascript %} {% endblock %}
-	</head>
-	<body>
-		<nav class="navbar navbar-dark bg-dark">
-			<div>
+	<title>
+		{% block title %} BSC {% endblock %}
+	</title>
+
+	{% block extra_css %} {% endblock %}
+	{% block extra_javascript %} {% endblock %}
+</head>
+
+<body>
+	<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+		<a class="navbar-brand" href="#">BSC</a>
+		<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+			<span class="navbar-toggler-icon"></span>
+		</button>
+
+		<div class="collapse navbar-collapse" id="navbarSupportedContent">
+			<ul class="nav navbar-nav ml-auto">
 				{% if current_user.is_authenticated %}
-					<div>
-						<p> {{ current_user.full_name }} </p>
-						<p> {{ current_user.stepic_id }} </p>
-					</div>
-					<img src="{{ current_user.avatar_url }}">
+				<!-- <li class="nav-item mr-sm-2">
+						<div class="card bg-secondary text-white">
+							<div class="row">
+								<div class="col-md-4">
+									<img src="{{ current_user.avatar_url }}" class="card-img">
+								</div>
+								<div class="col-md-8">
+									<div class="card-body">
+										<p class="card-text">{{ current_user.full_name }}</p>
+										<p class="card-text"><small>{{ current_user.stepic_id }}</small></p>
+									</div>
+								</div>
+							</div>
+						</div>
+					</li> -->
+				<li class="nav-item">
+					<a class="btn btn-outline-warning mr-sm-2" href="{{ url_for('main.show_all_comments') }}">Комментарии</a>
+				</li>
+				<li class="nav-item">
+					<a class="btn btn-outline-info mr-sm-2" href="{{ url_for('main.show_all_courses') }}">Мои курсы</a>
+				</li>
+				<li class="nav-item">
 					<a class="btn btn-outline-danger" href="{{ url_for('main.logout') }}">Выйти</a>
+				</li>
 				{% else %}
+				<li class="nav-item">
 					<a class="btn btn-outline-success" href="{{ url_for('main.login') }}">Войти</a>
+				</li>
 				{% endif %}
-			</div>
-		</nav>
+			</ul>
+		</div>
+	</nav>
 
-		{% block content %} {% endblock %}
+	{% block content %} {% endblock %}
 
-		<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
-				integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
-				crossorigin="anonymous">
-		</script>
-		<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"
-				integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1"
-				crossorigin="anonymous">
-		</script>
-		<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
-			integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
-			crossorigin="anonymous">
-		</script>
-	</body>
+	<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous">
+	</script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous">
+	</script>
+	<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous">
+	</script>
+</body>
+
 </html>
