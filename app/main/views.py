@@ -2,7 +2,7 @@ from app.main import main
 from flask import render_template, session, request, redirect, url_for, abort, jsonify
 from flask_login import login_user, logout_user, login_required, current_user
 from app.main.stepic import StepicOauth, StepicApi
-from app.main.models import Teacher, Course
+from app.main.models import Teacher, Course, Comment
 
 stepic_oauth = StepicOauth()
 
@@ -51,8 +51,39 @@ def index():
 @main.route('/comments/', methods=['GET'])
 @login_required
 def show_all_comments():
+	comment_list = Comment.objects()
 
-	return render_template("main/comments.html", comments=[])
+	return render_template("main/comments.html", comment_list=comment_list)
+
+
+@main.route('/comments/update/', methods=['GET'])
+@login_required
+def update_comments():
+	stepic_api = StepicApi(session['token'])
+	for course in Course.objects():
+		comment_list = stepic_api.get_course_comments(course.stepic_id)
+		print(len(comment_list))
+		for comment in comment_list:
+			Comment.objects(stepic_id=comment['stepic_id']).update_one(
+				parent_id = comment['parent_id'],
+				step_id = comment['step_id'],
+				user_id = comment['user_id'],
+				user_role = comment['user_role'],
+				time = comment['time'],
+				last_time = comment['last_time'],
+				text = comment['text'],
+				replies = comment['replies'],
+				reply_count = comment['reply_count'],
+				is_deleted = comment['is_deleted'],
+				is_pinned = comment['is_pinned'],
+				is_staff_replied = comment['is_staff_replied'],
+				is_reported = comment['is_reported'],
+				attachments = comment['attachments'],
+				epic_count = comment['epic_count'],
+				abuse_count = comment['abuse_count'],
+				upsert=True)
+
+	return redirect(url_for('.show_all_comments'))
 
 
 @main.route('/courses/', methods=['GET'])

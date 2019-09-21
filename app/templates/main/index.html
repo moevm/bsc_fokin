@@ -1,8 +1,21 @@
 {% extends "main/base.html" %}
 
+{% block extra_css %}
+
+<link rel="stylesheet" href="{{ url_for('static', filename = 'css/index.css') }}">
+
+{% endblock %}
+
 {% block content %}
 
-<br>
-<h1 style="text-align: center;">BSC Fokin</h1>
+<div class="overlay">
+	<div class="description text-center">
+		<h2>Добро пожаловать в курсовой аггрегатор</h2>
+		<p>
+			Для использования требуется авторизация через Stepik.
+		</p>
+		<a class="btn-lg btn-secondary" href="{{ url_for('main.login') }}" style="text-align: center; margin-top: 20rem">Войти</a>
+	</div>
+</div>
 
 {% endblock %}

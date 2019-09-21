@@ -75,6 +75,14 @@ class StepicApi:
 
 		return response
 
+	def __fetch_comments(self, course_id, page):
+		url = 'https://stepik.org/api/comments?course={}&parent=null&page={}'.format(course_id, page)
+		response = requests.get(
+			url,
+			headers={'Authorization': 'Bearer {}'.format(self.__token)}).json()
+
+		return response
+
 	# **************************************************************************
 	# Public functions
 	# **************************************************************************
@@ -102,6 +110,13 @@ class StepicApi:
 
 		return score
 
+	def is_valid_comment(self, comment):
+		if (not comment['is_staff_replied'] and
+			not comment['is_deleted']):
+			return True
+		else:
+			return False
+
 	def get_user_courses(self, user_id):
 		page = 1
 		while page:
@@ -119,3 +134,35 @@ class StepicApi:
 			page = page + 1 if response['meta']['has_next'] else 0
 
 		return course_list
+
+	def get_course_comments(self, course_id):
+		page = 1
+		comment_list = []
+		while page:
+			response = self.__fetch_comments(course_id, page)
+			print(page)
+			comment_list += [
+				{
+					'stepic_id': comment['id'],
+					'parent_id': comment['parent'],
+					'step_id': comment['target'],
+					'user_id': comment['user'],
+					'user_role': comment['user_role'],
+					'time': comment['time'],
+					'last_time': comment['last_time'],
+					'text': comment['text'],
+					'replies': comment['replies'],
+					'reply_count': comment['reply_count'],
+					'is_deleted': comment['is_deleted'],
+					'is_pinned': comment['is_pinned'],
+					'is_staff_replied': comment['is_staff_replied'],
+					'is_reported': comment['is_reported'],
+					'attachments': comment['attachments'],
+					'epic_count': comment['epic_count'],
+					'abuse_count': comment['abuse_count']
+				}
+				for comment in response['comments']
+				if self.is_valid_comment(comment)]
+			page = page + 1 if response['meta']['has_next'] else 0
+
+		return comment_list

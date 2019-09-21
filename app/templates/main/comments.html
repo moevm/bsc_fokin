@@ -2,7 +2,26 @@
 
 {% block content %}
 
-<br>
 <h1 style="text-align: center;">Комментарии</h1>
+<div class="row">
+	<div class="col-8">
+		<h2 style="text-align: center;">Список комментариев</h2>
+		{% for comment in comment_list %}
+		<div class="card border-secondary mb-3">
+			<div class="card-header">
+				{{ comment.stepic_id }}
+			</div>
+			<div class="card-body">
+				<h5 class="card-title">{{ comment.user_id }}</h5>
+				<p class="card-text">{{ comment.text|safe }}</p>
+				<a href="#" class="btn btn-outline-primary">Ссылка на обсуждение</a>
+			</div>
+		</div>
+		{% endfor %}
+	</div>
+	<div class="col-4" style="text-align: center;">
+		<a class="btn btn-outline-info mr-sm-2" href="{{ url_for('main.update_comments') }}">Обновить</a>
+	</div>
+</div>
 
 {% endblock %}
