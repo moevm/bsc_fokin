@@ -8,9 +8,9 @@
 
 {% block content %}
 
-<div class="jumbotron text-white rounded bg-secondary">
+<div class="jumbotron rounded bg-light">
 	ТоDo: Фильтрация
-	<a class="btn btn-danger mr-2" href="{{ url_for('main.update_comments') }}">Обновить</a>
+	<a class="btn btn-warning mr-2" href="{{ url_for('main.update_comments') }}">Обновить</a>
 </div>
 <div class="comment-list">
 	<div class="row">
@@ -51,6 +51,15 @@
 			{% endfor %}
 		</div>
 	</div>
+</div>
+<div class="jumbotron rounded bg-light">
+	{% if prev_page %}
+	<a class="btn btn-info mr-2" href="{{ url_for('main.show_all_comments', page=prev_page) }}">{{ prev_page }}</a>
+	{% endif %}
+	<a class="btn btn-outline-info mr-2" href="#">{{ curr_page }}</a>
+	{% if next_page %}
+	<a class="btn btn-info" href="{{ url_for('main.show_all_comments', page=next_page) }}">{{ next_page }}</a>
+	{% endif %}
 </div>
 
 {% endblock %}

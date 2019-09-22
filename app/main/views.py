@@ -4,6 +4,7 @@ from flask_login import login_user, logout_user, login_required, current_user
 from app.main.stepic import StepicOauth, StepicApi
 from app.main.models import Teacher, Course, Comment
 
+COMMENTS_PER_PAGE = 5
 stepic_oauth = StepicOauth()
 
 
@@ -48,12 +49,21 @@ def index():
 		return render_template("main/index.html")
 
 
-@main.route('/comments/', methods=['GET'])
+@main.route('/comments/', methods=['GET', 'POST'])
+@main.route('/comments/<int:page>/', methods=['GET', 'POST'])
 @login_required
-def show_all_comments():
-	comment_list = Comment.objects()
+def show_all_comments(page=1):
+	comment_list = Comment.objects().skip(COMMENTS_PER_PAGE * (page - 1)).limit(COMMENTS_PER_PAGE)
+	prev_page = page - 1 if (page - 1) else 0
+	curr_page = page
+	next_page = page + 1 if (Comment.objects().count() >= COMMENTS_PER_PAGE * (page + 1)) else 0
 
-	return render_template("main/comments.html", comment_list=comment_list)
+	return render_template(
+		"main/comments.html",
+		comment_list=comment_list,
+		prev_page=prev_page,
+		curr_page=curr_page,
+		next_page=next_page)
 
 
 @main.route('/comments/update/', methods=['GET'])
