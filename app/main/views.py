@@ -62,7 +62,6 @@ def update_comments():
 	stepic_api = StepicApi(session['token'])
 	for course in Course.objects():
 		comment_list = stepic_api.get_course_comments(course.stepic_id)
-		print(len(comment_list))
 		for comment in comment_list:
 			Comment.objects(stepic_id=comment['stepic_id']).update_one(
 				parent_id = comment['parent_id'],

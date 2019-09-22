@@ -27,7 +27,7 @@
 				{% if current_user.is_authenticated %}
 				<li class="nav-item dropdown">
 					<a class="btn btn-secondary dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-						<img src="{{ current_user.avatar_url }}" style="height: 3rem"> {{ current_user.full_name }}
+						<img src="{{ current_user.avatar_url }}"> {{ current_user.full_name }}
 					</a>
 					<div class="dropdown-menu bg-secondary" aria-labelledby="navbarDropdown">
 						<a class="btn bg-warning dropdown-item" href="{{ url_for('main.show_all_comments') }}">Комментарии</a>

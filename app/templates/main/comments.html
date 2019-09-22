@@ -1,26 +1,55 @@
 {% extends "main/base.html" %}
 
+{% block extra_css %}
+
+<link rel="stylesheet" href="{{ url_for('static', filename = 'css/comments.css') }}">
+
+{% endblock %}
+
 {% block content %}
 
-<h1 style="text-align: center;">Комментарии</h1>
-<div class="row">
-	<div class="col-8">
-		<h2 style="text-align: center;">Список комментариев</h2>
-		{% for comment in comment_list %}
-		<div class="card border-secondary mb-3">
-			<div class="card-header">
-				{{ comment.stepic_id }}
+<div class="jumbotron text-white rounded bg-secondary">
+	ТоDo: Фильтрация
+	<a class="btn btn-danger mr-2" href="{{ url_for('main.update_comments') }}">Обновить</a>
+</div>
+<div class="comment-list">
+	<div class="row">
+		<div class="col-8">
+			{% for comment in comment_list %}
+			<div class="card border-secondary mb-3">
+				<div class="row no-gutters">
+					<div class="col-3">
+						<img src="https://stepik.org/users/19764358/af0acaa2dacd7a7004958c54e12ab05838ad22ab/avatar.svg" class="card-img-top">
+						<div class="card-body">
+							<p class="card-text">
+								Имя Фамилия
+							</p>
+							<ul class="list-group list-group-flush">
+								<li class="list-group-item">Процент прохождения курса</li>
+								<li class="list-group-item">Лайки и дизлайки</li>
+								<li class="list-group-item">Репутация</li>
+								<li class="list-group-item">Попытки</li>
+							</ul>
+						</div>
+					</div>
+					<div class="col-9">
+						<div class="card-header">
+							22.09.2019 0:19:35
+						</div>
+						<div class="card-body">
+							<p class="card-text">Здесь будет текст вопроса давайте
+								посмотрим что будет если он будет длинный ахзааза
+								амвьмфвб бпю ю ю ф таомффао ь ьа ьи ьим ьи я устал
+							</p>
+						</div>
+					</div>
+					<div class="card-footer">
+						<a href="#" class="btn btn-outline-primary">Ссылка на обсуждение</a>
+					</div>
+				</div>
 			</div>
-			<div class="card-body">
-				<h5 class="card-title">{{ comment.user_id }}</h5>
-				<p class="card-text">{{ comment.text|safe }}</p>
-				<a href="#" class="btn btn-outline-primary">Ссылка на обсуждение</a>
-			</div>
+			{% endfor %}
 		</div>
-		{% endfor %}
-	</div>
-	<div class="col-4" style="text-align: center;">
-		<a class="btn btn-outline-info mr-sm-2" href="{{ url_for('main.update_comments') }}">Обновить</a>
 	</div>
 </div>
 

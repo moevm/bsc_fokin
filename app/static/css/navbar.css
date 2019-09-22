@@ -35,3 +35,7 @@
 	color: #f4f4f4;
 	cursor: pointer;
 }
+
+.nav-item img {
+	height: 3rem;
+}

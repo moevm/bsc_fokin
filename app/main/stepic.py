@@ -140,7 +140,6 @@ class StepicApi:
 		comment_list = []
 		while page:
 			response = self.__fetch_comments(course_id, page)
-			print(page)
 			comment_list += [
 				{
 					'stepic_id': comment['id'],
