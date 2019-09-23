@@ -53,17 +53,9 @@ def index():
 @main.route('/comments/<int:page>/', methods=['GET', 'POST'])
 @login_required
 def show_all_comments(page=1):
-	comment_list = Comment.objects().skip(COMMENTS_PER_PAGE * (page - 1)).limit(COMMENTS_PER_PAGE)
-	prev_page = page - 1 if (page - 1) else 0
-	curr_page = page
-	next_page = page + 1 if (Comment.objects().count() >= COMMENTS_PER_PAGE * (page + 1)) else 0
+	comment_list = Comment.objects.paginate(page=page, per_page=COMMENTS_PER_PAGE)
 
-	return render_template(
-		"main/comments.html",
-		comment_list=comment_list,
-		prev_page=prev_page,
-		curr_page=curr_page,
-		next_page=next_page)
+	return render_template("main/comments.html", comment_list=comment_list)
 
 
 @main.route('/comments/update/', methods=['GET'])
