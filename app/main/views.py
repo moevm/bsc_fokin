@@ -2,7 +2,7 @@ from app.main import main
 from flask import render_template, session, request, redirect, url_for, abort, jsonify
 from flask_login import login_user, logout_user, login_required, current_user
 from app.main.stepic import StepicOauth, StepicApi
-from app.main.models import Teacher, Course, Comment
+from app.main.models import Teacher, User, Course, Comment
 
 COMMENTS_PER_PAGE = 5
 stepic_oauth = StepicOauth()
@@ -28,7 +28,7 @@ def authorization():
 	response = stepic_oauth.app.authorized_response()
 	session['token'] = response['access_token']
 	stepic_api = StepicApi(session['token'])
-	user_profile = stepic_api.get_user_profile()
+	user_profile = stepic_api.get_current_user_profile()
 	stepic_id = user_profile['id']
 	session['stepic_id'] = stepic_id
 	Teacher.objects(stepic_id=stepic_id).update_one(
@@ -53,7 +53,7 @@ def index():
 @main.route('/comments/<int:page>/', methods=['GET', 'POST'])
 @login_required
 def show_all_comments(page=1):
-	comment_list = Comment.objects.paginate(page=page, per_page=COMMENTS_PER_PAGE)
+	comment_list = Comment.objects.order_by('-epic_count').paginate(page=page, per_page=COMMENTS_PER_PAGE)
 
 	return render_template("main/comments.html", comment_list=comment_list)
 
@@ -62,27 +62,24 @@ def show_all_comments(page=1):
 @login_required
 def update_comments():
 	stepic_api = StepicApi(session['token'])
-	for course in Course.objects():
+	# update all comments
+	for course in Course.objects:
 		comment_list = stepic_api.get_course_comments(course.stepic_id)
-		for comment in comment_list:
-			Comment.objects(stepic_id=comment['stepic_id']).update_one(
-				parent_id = comment['parent_id'],
-				step_id = comment['step_id'],
-				user_id = comment['user_id'],
-				user_role = comment['user_role'],
-				time = comment['time'],
-				last_time = comment['last_time'],
-				text = comment['text'],
-				replies = comment['replies'],
-				reply_count = comment['reply_count'],
-				is_deleted = comment['is_deleted'],
-				is_pinned = comment['is_pinned'],
-				is_staff_replied = comment['is_staff_replied'],
-				is_reported = comment['is_reported'],
-				attachments = comment['attachments'],
-				epic_count = comment['epic_count'],
-				abuse_count = comment['abuse_count'],
-				upsert=True)
+		for comment_info in comment_list:
+			old_comment = Comment.objects(stepic_id=comment_info['stepic_id']).first()
+			if old_comment:
+				old_comment.update_comment(comment_info).save()
+			else:
+				user = User.objects(stepic_id=comment_info['user_id']).first()
+				if not user:
+					user = User(stepic_id=comment_info['user_id'])
+				user = user.add_step(comment_info).save()
+				new_comment = Comment().add_comment(comment_info, user).save(validate=False)
+	# update all users
+	user_id_list = User.objects().distinct('stepic_id')
+	user_list = stepic_api.get_users_info(user_id_list)
+	for user_info in user_list:
+		User.objects(stepic_id=user_info['id']).first().update_user(user_info).save()
 
 	return redirect(url_for('.show_all_comments'))
 
@@ -90,7 +87,7 @@ def update_comments():
 @main.route('/courses/', methods=['GET'])
 @login_required
 def show_all_courses():
-	course_list = Course.objects()
+	course_list = Course.objects
 
 	return render_template("main/courses.html", course_list=course_list)
 
@@ -100,15 +97,10 @@ def show_all_courses():
 def update_courses():
 	stepic_api = StepicApi(session['token'])
 	course_list = stepic_api.get_user_courses(session['stepic_id'])
-	for course in course_list:
-		Course.objects(stepic_id=course['stepic_id']).update_one(
-			stepic_id=course['stepic_id'],
-			title=course['title'],
-			summary=course['summary'],
-			cover=course['cover'],
-			cert_reg_threshold=course['cert_reg_threshold'],
-			cert_dist_threshold=course['cert_dist_threshold'],
-			score=course['score'],
-			upsert=True)
+	for course_info in course_list:
+		course = Course.objects(stepic_id=course_info['stepic_id']).first()
+		if not course:
+			course = Course()
+		course.update_course(course_info).save()
 
 	return redirect(url_for('.show_all_courses'))

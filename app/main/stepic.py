@@ -8,6 +8,8 @@ STEPIC_UNITS = 'unit'
 STEPIC_LESSONS = 'lesson'
 STEPIC_STEPS = 'step'
 STEPIC_PROGRESSES = 'progresse'
+STEPIC_COURSE_GRADES = 'course-grades'
+STEPIC_USERS = 'user'
 
 
 class StepicOauth:
@@ -51,15 +53,15 @@ class StepicApi:
 
 		return objs
 
-	def __fetch_course_grades(self, course_id, user_id):
-		url = 'https://stepik.org/api/course-grades?course={}&user={}'.format(course_id, user_id)
-		response = requests.get(
-			url,
-			headers={'Authorization': 'Bearer {}'.format(self.__token)}).json()
+	# def __fetch_course_grades(self, course_id, user_id):
+	# 	url = 'https://stepik.org/api/course-grades?course={}&user={}'.format(course_id, user_id)
+	# 	response = requests.get(
+	# 		url,
+	# 		headers={'Authorization': 'Bearer {}'.format(self.__token)}).json()
+	#
+	# 	return response['course-grades'][0]
 
-		return response['course-grades'][0]
-
-	def __fetch_user_profile(self):
+	def __fetch_current_user_profile(self):
 		url = 'https://stepik.org/api/stepics/1'
 		response = requests.get(
 			url,
@@ -76,7 +78,8 @@ class StepicApi:
 		return response
 
 	def __fetch_comments(self, course_id, page):
-		url = 'https://stepik.org/api/comments?course={}&parent=null&page={}'.format(course_id, page)
+		url = 'https://stepik.org/api/comments?course={}&page={}'.format(course_id, page)
+		print(url)
 		response = requests.get(
 			url,
 			headers={'Authorization': 'Bearer {}'.format(self.__token)}).json()
@@ -86,8 +89,11 @@ class StepicApi:
 	# **************************************************************************
 	# Public functions
 	# **************************************************************************
-	def get_user_profile(self):
-		return self.__fetch_user_profile()
+	def get_current_user_profile(self):
+		return self.__fetch_current_user_profile()
+
+	def get_users_info(self, user_id_list):
+		return self.__fetch_objects(STEPIC_USERS, user_id_list)
 
 	def get_course_score(self, stepic_course):
 		if stepic_course['progress']:
@@ -109,13 +115,6 @@ class StepicApi:
 			score = sum([progress['cost'] for progress in progresses])
 
 		return score
-
-	def is_valid_comment(self, comment):
-		if (not comment['is_staff_replied'] and
-			not comment['is_deleted']):
-			return True
-		else:
-			return False
 
 	def get_user_courses(self, user_id):
 		page = 1
@@ -144,6 +143,7 @@ class StepicApi:
 				{
 					'stepic_id': comment['id'],
 					'parent_id': comment['parent'],
+					'course_id': course_id,
 					'step_id': comment['target'],
 					'user_id': comment['user'],
 					'user_role': comment['user_role'],
@@ -160,8 +160,10 @@ class StepicApi:
 					'epic_count': comment['epic_count'],
 					'abuse_count': comment['abuse_count']
 				}
-				for comment in response['comments']
-				if self.is_valid_comment(comment)]
+				for comment in response['comments']]
 			page = page + 1 if response['meta']['has_next'] else 0
 
 		return comment_list
+
+	def get_user_course_grades(self, user_id, course_id):
+		return self.__fetch_course_grades(course_id, user_id)[STEPIC_COURSE_GRADES]

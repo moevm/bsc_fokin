@@ -1,15 +1,15 @@
 {% macro render_navigation(pagination, endpoint) %}
 <div class="pagination">
 	{% for page in pagination.iter_pages() %}
-		{% if page %}
-			{% if page != pagination.page %}
-				<a class="btn btn-info mr-2" href="{{ url_for(endpoint, page=page) }}">{{ page }}</a>
-			{% else %}
-				<a class="btn btn-outline-info mr-2" href="{{ url_for(endpoint, page=page) }}">{{ page }}</a>
-			{% endif %}
-		{% else %}
-			<a class="btn btn-outline-info disabled mr-2" href="">...</a>
-		{% endif %}
+	{% if page %}
+	{% if page != pagination.page %}
+	<a class="btn btn-info mr-2" href="{{ url_for(endpoint, page=page) }}">{{ page }}</a>
+	{% else %}
+	<a class="btn btn-outline-info mr-2" href="{{ url_for(endpoint, page=page) }}">{{ page }}</a>
+	{% endif %}
+	{% else %}
+	<a class="btn btn-outline-info disabled mr-2" href="">...</a>
+	{% endif %}
 	{% endfor %}
 </div>
 {% endmacro %}
@@ -22,27 +22,29 @@
 		<div class="card border-secondary mb-3">
 			<div class="row no-gutters">
 				<div class="col-3">
-					<img src="https://stepik.org/users/19764358/af0acaa2dacd7a7004958c54e12ab05838ad22ab/avatar.svg" class="card-img-top">
+					<img src="{{ comment.user.avatar_url }}" class="card-img-top">
 					<div class="card-body">
 						<p class="card-text">
-							Имя Фамилия
+							{{ comment.user.full_name }}
 						</p>
 						<ul class="list-group list-group-flush">
 							<li class="list-group-item">Процент прохождения курса</li>
-							<li class="list-group-item">Лайки и дизлайки</li>
-							<li class="list-group-item">Репутация</li>
+							<li class="list-group-item">
+								<span class="badge badge-success">{{ comment.epic_count }}</span>
+								<span class="badge badge-danger">{{ comment.abuse_count }}</span>
+							</li>
+							<li class="list-group-item">{{ comment.user.reputation }}</li>
 							<li class="list-group-item">Попытки</li>
 						</ul>
 					</div>
 				</div>
 				<div class="col-9">
 					<div class="card-header">
-						22.09.2019 0:19:35
+						{{ comment.time | date('%d.%m.%Y %H:%M') }}
 					</div>
 					<div class="card-body">
-						<p class="card-text">Здесь будет текст вопроса давайте
-							посмотрим что будет если он будет длинный ахзааза
-							амвьмфвб бпю ю ю ф таомффао ь ьа ьи ьим ьи я устал
+						<p class="card-text">
+							{{ comment.text | safe }}
 						</p>
 					</div>
 				</div>
