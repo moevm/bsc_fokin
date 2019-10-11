@@ -1,5 +1,4 @@
 from app.create_app import oauth
-from app.main.models import Course, Teacher
 import config.config_reader as cr
 import requests
 
@@ -53,13 +52,13 @@ class StepicApi:
 
 		return objs
 
-	# def __fetch_course_grades(self, course_id, user_id):
-	# 	url = 'https://stepik.org/api/course-grades?course={}&user={}'.format(course_id, user_id)
-	# 	response = requests.get(
-	# 		url,
-	# 		headers={'Authorization': 'Bearer {}'.format(self.__token)}).json()
-	#
-	# 	return response['course-grades'][0]
+	def __fetch_course_grades(self, course_id, user_id):
+		url = 'https://stepik.org/api/course-grades?course={}&user={}'.format(course_id, user_id)
+		response = requests.get(
+			url,
+			headers={'Authorization': 'Bearer {}'.format(self.__token)}).json()
+
+		return response
 
 	def __fetch_current_user_profile(self):
 		url = 'https://stepik.org/api/stepics/1'
@@ -165,5 +164,5 @@ class StepicApi:
 
 		return comment_list
 
-	def get_user_course_grades(self, user_id, course_id):
+	def get_user_course_grades(self, course_id, user_id):
 		return self.__fetch_course_grades(course_id, user_id)[STEPIC_COURSE_GRADES]

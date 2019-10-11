@@ -54,6 +54,9 @@ def index():
 @login_required
 def show_all_comments(page=1):
 	comment_list = Comment.objects.order_by('-epic_count').paginate(page=page, per_page=COMMENTS_PER_PAGE)
+	for comment in comment_list.items:
+		comment.user.update_course_grades(session['token']).save()
+	comment_list = Comment.objects.order_by('-epic_count').paginate(page=page, per_page=COMMENTS_PER_PAGE)
 
 	return render_template("main/comments.html", comment_list=comment_list)
 
@@ -74,7 +77,7 @@ def update_comments():
 				if not user:
 					user = User(stepic_id=comment_info['user_id'])
 				user = user.add_step(comment_info).save()
-				new_comment = Comment().add_comment(comment_info, user).save(validate=False)
+				new_comment = Comment(user=user, course=course).update_comment(comment_info).save()
 	# update all users
 	user_id_list = User.objects().distinct('stepic_id')
 	user_list = stepic_api.get_users_info(user_id_list)

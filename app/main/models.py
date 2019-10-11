@@ -1,10 +1,9 @@
 from app.create_app import db, login_manager
 from flask_login import UserMixin
-# from app.main.stepic import StepicApi
+from app.main.stepic import StepicApi
 
 
 class Teacher(UserMixin, db.Document):
-	_id = db.ObjectIdField()
 	serial_id = db.SequenceField()
 	stepic_id = db.IntField(unique=True)
 	full_name = db.StringField(default='')
@@ -12,10 +11,35 @@ class Teacher(UserMixin, db.Document):
 	course_list = db.ListField(default=[])
 
 	def get_id(self):
-		return str(self._id)
+		return str(self.id)
 
 	def get_info(self):
 		return self.to_json()
+
+
+class Course(db.Document):
+	serial_id = db.SequenceField()
+	stepic_id = db.IntField(unique=True)
+	title = db.StringField(default='')
+	summary = db.StringField(default='')
+	cover = db.StringField(default='')
+	cert_reg_threshold = db.IntField(default=0)
+	cert_dist_threshold = db.IntField(default=0)
+	score = db.IntField(default=0)
+
+	def get_info(self):
+		return self.to_json()
+
+	def update_course(self, course_info):
+		self.stepic_id=course_info['stepic_id']
+		self.title=course_info['title']
+		self.summary=course_info['summary']
+		self.cover=course_info['cover']
+		self.cert_reg_threshold=course_info['cert_reg_threshold']
+		self.cert_dist_threshold=course_info['cert_dist_threshold']
+		self.score=course_info['score']
+
+		return self
 
 
 class UserStep(db.EmbeddedDocument):
@@ -27,6 +51,13 @@ class UserStep(db.EmbeddedDocument):
 
 	def get_info(self):
 		return self.to_json()
+
+	def update_user_step(self, step_grades):
+		self.score=step_grades['score']
+		self.is_passed=step_grades['is_passed']
+		self.total_submissions=step_grades['total_submissions']
+
+		return self
 
 
 class UserCourse(db.EmbeddedDocument):
@@ -43,9 +74,18 @@ class UserCourse(db.EmbeddedDocument):
 
 		return self
 
+	def update_step_grades(self, course_grades):
+		self.score=course_grades['score']
+		for step_id in self.steps:
+			for step_grades in course_grades['results']:
+				if str(course_grades['results'][step_grades]['step_id']) == step_id:
+					self.steps[step_id].update_user_step(course_grades['results'][step_grades])
+					break
+
+		return self
+
 
 class User(db.Document):
-	_id = db.ObjectIdField()
 	serial_id = db.SequenceField()
 	stepic_id = db.IntField(unique=True)
 	full_name = db.StringField(default='')
@@ -72,43 +112,23 @@ class User(db.Document):
 
 		return self
 
-
-class Course(db.Document):
-	_id = db.ObjectIdField()
-	serial_id = db.SequenceField()
-	stepic_id = db.IntField(unique=True)
-	title = db.StringField(default='')
-	summary = db.StringField(default='')
-	cover = db.StringField(default='')
-	cert_reg_threshold = db.IntField(default=0)
-	cert_dist_threshold = db.IntField(default=0)
-	score = db.IntField(default=0)
-	steps = db.ListField(default=[])
-	is_selected = db.BooleanField(default=False)
-
-	def get_info(self):
-		return self.to_json()
-
-	def update_course(self, course_info):
-		self.stepic_id=course_info['stepic_id']
-		self.title=course_info['title']
-		self.summary=course_info['summary']
-		self.cover=course_info['cover']
-		self.cert_reg_threshold=course_info['cert_reg_threshold']
-		self.cert_dist_threshold=course_info['cert_dist_threshold']
-		self.score=course_info['score']
+	def update_course_grades(self, token):
+		stepic_api = StepicApi(token)
+		for course_id in self.courses:
+			course_grades = stepic_api.get_user_course_grades(course_id, self.stepic_id)
+			if course_grades:
+				self.courses[course_id].update_step_grades(course_grades[0])
 
 		return self
 
 
 class Comment(db.Document):
-	_id = db.ObjectIdField()
 	serial_id = db.SequenceField()
 	stepic_id = db.IntField(unique=True)
 	parent_id = db.IntField()
-	course_id = db.IntField()
 	step_id = db.IntField()
 	user = db.ReferenceField(User)
+	course = db.ReferenceField(Course)
 	user_role = db.StringField(default='')
 	time = db.StringField(default='')
 	last_time = db.StringField(default='')
@@ -126,30 +146,12 @@ class Comment(db.Document):
 	def get_info(self):
 		return self.to_json()
 
-	def add_comment(self, comment_info, user):
+	def update_comment(self, comment_info):
 		self.stepic_id=comment_info['stepic_id']
 		self.parent_id=comment_info['parent_id']
-		self.course_id=comment_info['course_id']
 		self.step_id=comment_info['step_id']
-		self.user=user
 		self.user_role=comment_info['user_role']
 		self.time=comment_info['time']
-		self.last_time=comment_info['last_time']
-		self.text=comment_info['text']
-		# self.replies=comment_info['replies']
-		self.reply_count=comment_info['reply_count']
-		self.is_deleted=comment_info['is_deleted']
-		self.is_pinned=comment_info['is_pinned']
-		self.is_staff_replied=comment_info['is_staff_replied']
-		self.is_reported=comment_info['is_reported']
-		self.attachments=comment_info['attachments']
-		self.epic_count=comment_info['epic_count']
-		self.abuse_count=comment_info['abuse_count']
-
-		return self
-
-	def update_comment(self, comment_info):
-		self.user_role=comment_info['user_role']
 		self.last_time=comment_info['last_time']
 		self.text=comment_info['text']
 		# self.replies=comment_info['replies']
@@ -168,6 +170,6 @@ class Comment(db.Document):
 @login_manager.user_loader
 def load_user(user_id):
 	try:
-		return Teacher.objects(_id=user_id).first()
+		return Teacher.objects(id=user_id).first()
 	except:
 		return None

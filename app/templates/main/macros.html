@@ -28,13 +28,21 @@
 							{{ comment.user.full_name }}
 						</p>
 						<ul class="list-group list-group-flush">
-							<li class="list-group-item">Процент прохождения курса</li>
+							<li class="list-group-item">{{ "%.2f" % (comment.user.courses[comment.course.stepic_id | string].score / comment.course.score * 100) }}%</li>
 							<li class="list-group-item">
 								<span class="badge badge-success">{{ comment.epic_count }}</span>
 								<span class="badge badge-danger">{{ comment.abuse_count }}</span>
 							</li>
 							<li class="list-group-item">{{ comment.user.reputation }}</li>
-							<li class="list-group-item">Попытки</li>
+							<li class="list-group-item">
+								{% if comment.user.courses[comment.course.stepic_id | string].steps[comment.step_id | string].is_passed  %}
+								<span class="badge badge-success">
+								{% else %}
+								<span class="badge badge-danger">
+								{% endif %}
+									{{ comment.user.courses[comment.course.stepic_id | string].steps[comment.step_id | string].total_submissions }}
+								</span>
+							</li>
 						</ul>
 					</div>
 				</div>
