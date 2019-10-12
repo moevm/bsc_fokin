@@ -1,0 +1,34 @@
+{% extends "main/base.html" %}
+
+{% block content %}
+
+<h1 style="text-align: center;">Курсы</h1>
+<div class="row">
+	<div class="col-6">
+		<h2 style="text-align: center;">Список курсов</h2>
+		{% for course in course_list %}
+		<div class="card mb-3">
+			<div class="row">
+				<div class="col-2">
+					<img src="{{ course.cover }}" class="card-img">
+				</div>
+				<div class="col-8">
+					<div class="card-body">
+						<h5 class="card-title">{{ course.title }}</h5>
+						<p class="card-text"><small class="text-muted">{{ course.stepic_id }}</small></p>
+					</div>
+				</div>
+				<div class="col-2">
+
+				</div>
+			</div>
+		</div>
+		{% endfor %}
+	</div>
+	<div class="col-6" style="text-align: center;">
+		<a class="btn btn-outline-info mr-2" href="{{ url_for('main.update_courses') }}">Обновить</a>
+		<a class="btn btn-outline-success mr-2" href="#">Сохранить</a>
+	</div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,22 @@
+{% extends "main/base.html" %}
+{% import "main/macros.html" as macros %}
+
+{% block extra_css %}
+
+<link rel="stylesheet" href="{{ url_for('static', filename = 'css/comments.css') }}">
+
+{% endblock %}
+
+{% block content %}
+
+<div class="jumbotron rounded bg-light">
+	{{ macros.render_comment_list_filter() }}
+</div>
+<div class="comment-list">
+	{{ macros.render_comment_list(comment_list) }}
+</div>
+<div class="jumbotron rounded bg-light">
+	{{ macros.render_navigation(comment_list, 'main.show_all_comments') }}
+</div>
+
+{% endblock %}
