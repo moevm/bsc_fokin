@@ -28,7 +28,17 @@
 							{{ comment.user.full_name }}
 						</p>
 						<ul class="list-group list-group-flush">
-							<li class="list-group-item">{{ "%.2f" % (comment.user.courses[comment.course.stepic_id | string].score / comment.course.score * 100) }}%</li>
+							<li class="list-group-item">
+								<div class="progress">
+									<div class="progress-bar" role="progressbar"
+										style="width: {{ "%.2f" % (comment.user.courses[comment.course.stepic_id | string].score / comment.course.score * 100) }}%"
+										aria-valuenow="{{ "%.2f" % (comment.user.courses[comment.course.stepic_id | string].score / comment.course.score * 100) }}"
+										aria-valuemin="0"
+										aria-valuemax="{{ comment.course.score }}">
+										{{ "%.2f" % (comment.user.courses[comment.course.stepic_id | string].score / comment.course.score * 100) }}%
+									</div>
+								</div>
+							</li>
 							<li class="list-group-item">
 								<span class="badge badge-success">{{ comment.epic_count }}</span>
 								<span class="badge badge-danger">{{ comment.abuse_count }}</span>
@@ -37,11 +47,11 @@
 							<li class="list-group-item">
 								{% if comment.user.courses[comment.course.stepic_id | string].steps[comment.step_id | string].is_passed  %}
 								<span class="badge badge-success">
-								{% else %}
-								<span class="badge badge-danger">
-								{% endif %}
-									{{ comment.user.courses[comment.course.stepic_id | string].steps[comment.step_id | string].total_submissions }}
-								</span>
+									{% else %}
+									<span class="badge badge-danger">
+										{% endif %}
+										{{ comment.user.courses[comment.course.stepic_id | string].steps[comment.step_id | string].total_submissions }}
+									</span>
 							</li>
 						</ul>
 					</div>
@@ -67,9 +77,55 @@
 {% endmacro %}
 
 
-{% macro render_comment_list_filter() %}
+{% macro render_comment_list_filter(current_user) %}
 <div class="">
-	ТоDo: Фильтрация
-	<a class="btn btn-warning mr-2" href="{{ url_for('main.update_comments') }}">Обновить</a>
+	<form action="{{ url_for('main.update_comments_filtration') }}" method="post">
+		<div class="form-row">
+			<div class="col">
+				<div class="form-group">
+					<legend class="col-form-label">Сортировка</legend>
+					<div class="form-check">
+						<input class="form-check-input" type="radio" name="sorting" value="epic_count" {% if current_user.sorting == "epic_count" %} checked {% endif %}>
+						<label class="form-check-label">
+							Лайки
+						</label>
+					</div>
+					<div class="form-check">
+						<input class="form-check-input" type="radio" name="sorting" value="abuse_count" {% if current_user.sorting == "abuse_count" %} checked {% endif %}>
+						<label class="form-check-label">
+							Дизлайки
+						</label>
+					</div>
+					<div class="form-check">
+						<input class="form-check-input" type="radio" name="sorting" value="reply_count" {% if current_user.sorting == "reply_count" %} checked {% endif %}>
+						<label class="form-check-label">
+							Ответы
+						</label>
+					</div>
+				</div>
+			</div>
+			<div class="col">
+				<div class="form-group">
+					<legend class="col-form-label">Порядок</legend>
+					<div class="form-check">
+						<input class="form-check-input" type="radio" name="ordering" value="" {% if current_user.ordering == "" %} checked {% endif %}>
+						<label class="form-check-label">
+							По возрастанию
+						</label>
+					</div>
+					<div class="form-check">
+						<input class="form-check-input" type="radio" name="ordering" value="-" {% if current_user.ordering == "-" %} checked {% endif %}>
+						<label class="form-check-label">
+							По убыванию
+						</label>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="form-group row">
+			<button type="submit" class="btn btn-success">Применить</button>
+			<a class="btn btn-warning ml-auto" href="{{ url_for('main.update_comments') }}">Обновить</a>
+		</div>
+	</form>
 </div>
 {% endmacro %}

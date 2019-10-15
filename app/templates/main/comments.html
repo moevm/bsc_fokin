@@ -10,7 +10,7 @@
 {% block content %}
 
 <div class="jumbotron rounded bg-light">
-	{{ macros.render_comment_list_filter() }}
+	{{ macros.render_comment_list_filter(current_user) }}
 </div>
 <div class="comment-list">
 	{{ macros.render_comment_list(comment_list) }}
