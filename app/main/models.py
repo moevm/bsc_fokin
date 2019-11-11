@@ -9,12 +9,20 @@ class Teacher(UserMixin, db.Document):
 	full_name = db.StringField(default='')
 	avatar_url = db.StringField(default='')
 	course_list = db.ListField(default=[])
+	sorting = db.StringField(default='epic_count')
+	ordering = db.StringField(default='')
 
 	def get_id(self):
 		return str(self.id)
 
 	def get_info(self):
 		return self.to_json()
+
+	def update_filters(self, form):
+		self.sorting = form.get('sorting')
+		self.ordering = form.get('ordering')
+
+		return self
 
 
 class Course(db.Document):

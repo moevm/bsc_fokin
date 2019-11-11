@@ -49,16 +49,26 @@ def index():
 		return render_template("main/index.html")
 
 
-@main.route('/comments/', methods=['GET', 'POST'])
-@main.route('/comments/<int:page>/', methods=['GET', 'POST'])
+@main.route('/comments/', methods=['GET'])
+@main.route('/comments/<int:page>/', methods=['GET'])
 @login_required
 def show_all_comments(page=1):
-	comment_list = Comment.objects.order_by('-epic_count').paginate(page=page, per_page=COMMENTS_PER_PAGE)
+	order = '{}{}'.format(current_user.ordering, current_user.sorting)
+	comment_list = Comment.objects.order_by(order).paginate(page=page, per_page=COMMENTS_PER_PAGE)
 	for comment in comment_list.items:
 		comment.user.update_course_grades(session['token']).save()
-	comment_list = Comment.objects.order_by('-epic_count').paginate(page=page, per_page=COMMENTS_PER_PAGE)
+	comment_list = Comment.objects.order_by(order).paginate(page=page, per_page=COMMENTS_PER_PAGE)
 
 	return render_template("main/comments.html", comment_list=comment_list)
+
+
+@main.route('/comments/', methods=['POST'])
+@login_required
+def update_comments_filtration():
+	form = request.form
+	current_user.update_filters(form).save()
+
+	return redirect(url_for('.show_all_comments'))
 
 
 @main.route('/comments/update/', methods=['GET'])
