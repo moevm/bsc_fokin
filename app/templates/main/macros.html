@@ -1,20 +1,20 @@
 {% macro render_navigation(pagination, endpoint) %}
 <div class="pagination">
 	{% for page in pagination.iter_pages() %}
-	{% if page %}
-	{% if page != pagination.page %}
-	<a class="btn btn-info mr-2" href="{{ url_for(endpoint, page=page) }}">{{ page }}</a>
-	{% else %}
-	<a class="btn btn-outline-info mr-2" href="{{ url_for(endpoint, page=page) }}">{{ page }}</a>
-	{% endif %}
-	{% else %}
-	<a class="btn btn-outline-info disabled mr-2" href="">...</a>
-	{% endif %}
+		{% if page %}
+			{% if page != pagination.page %}
+				<a class="btn btn-info mr-2" href="{{ url_for(endpoint, page=page) }}">{{ page }}</a>
+			{% else %}
+				<a class="btn btn-outline-info mr-2" href="{{ url_for(endpoint, page=page) }}">{{ page }}</a>
+			{% endif %}
+		{% else %}
+			<a class="btn btn-outline-info disabled mr-2" href="">...</a>
+		{% endif %}
 	{% endfor %}
 </div>
 {% endmacro %}
 
-
+<!-- ********** COMMENTS ********** -->
 {% macro render_comment_list(comment_list) %}
 <div class="row">
 	<div class="col-8">
@@ -59,7 +59,10 @@
 				</div>
 				<div class="col-9">
 					<div class="card-header">
-						{{ comment.time | date('%d.%m.%Y %H:%M') }}
+						Название курса: {{ comment.course.title }}
+					</div>
+					<div class="card-header">
+						Дата: {{ comment.time | date('%d.%m.%Y %H:%M') }}
 					</div>
 					<div class="card-body">
 						<p class="card-text">
@@ -68,7 +71,7 @@
 					</div>
 				</div>
 				<div class="card-footer">
-					<a href="#" class="btn btn-outline-primary">Ссылка на обсуждение</a>
+					<a href="{{ url_for('main.show_comment', step_id=comment.step_id, comment_id=comment.stepic_id) }}" class="btn btn-outline-primary">Ссылка на обсуждение</a>
 				</div>
 			</div>
 		</div>
@@ -83,14 +86,14 @@
 	<form action="{{ url_for('main.update_comments_filtration') }}" method="post">
 		<div class="row">
 			<div class="col-10 row">
-				{% for filter in current_user.filter_list %}
+				{% for comment_filter in current_user.comment_filter_list %}
 					<div class="col">
 						<div class="form-group">
 							<legend class="col-form-label"> Параметр №{{ loop.index }} </legend>
 								<div class="form-check">
 									<select name="sorting_{{ loop.index }}" class="form-control">
 										{% for option in sort_select_list %}
-											<option value="{{ option.value }}" {% if filter.sort == option.value %} selected {% endif %}> {{ option.label }} </option>
+											<option value="{{ option.value }}" {% if comment_filter.sort == option.value %} selected {% endif %}> {{ option.label }} </option>
 										{% endfor %}
 									</select>
 								</div>
@@ -100,7 +103,7 @@
 							<div class="form-check">
 								<select name="ordering_{{ loop.index }}" class="form-control">
 									{% for option in order_select_list %}
-										<option value="{{ option.value }}" {% if filter.order == option.value %} selected {% endif %}> {{ option.label }} </option>
+										<option value="{{ option.value }}" {% if comment_filter.order == option.value %} selected {% endif %}> {{ option.label }} </option>
 									{% endfor %}
 								</select>
 							</div>
@@ -110,10 +113,126 @@
 			</div>
 			<div class="col-2">
 				<div class="form-group">
-					<button type="submit" class="btn btn-success">Применить</button>
+					<legend class="col-form-label"> Выбор курса </legend>
+						<div class="form-check">
+							<select name="course" class="form-control">
+								<option value="-1" {% if current_user.course_comment_filter == -1 %} selected {% endif %}> Все </option>
+								{% for course in current_user.course_list %}
+									<option value="{{ course.stepic_id }}" {% if current_user.course_comment_filter == course.stepic_id %} selected {% endif %}> {{ course.title }} </option>
+								{% endfor %}
+							</select>
+							<br>
+							<br>
+							<button type="submit" class="btn btn-lg btn-success">Применить</button>
+						</div>
 				</div>
-				<a class="btn btn-warning ml-auto" href="{{ url_for('main.update_comments') }}">Обновить</a>
+		</div>
+		</div>
+	</form>
+</div>
+{% endmacro %}
+
+
+<!-- ********** REVIEWS ********** -->
+{% macro render_review_list(review_list) %}
+<div class="row">
+	<div class="col-8">
+		{% for review in review_list.items %}
+		<div class="card border-secondary mb-3">
+			<div class="row no-gutters">
+				<div class="col-3">
+					<div class="card-body">
+						<ul class="list-group list-group-flush">
+							<li class="list-group-item">
+								<img src="{{ review.user.avatar_url }}" class="card-img-top">
+							</li>
+							<li class="list-group-item"> {{ review.user.full_name }}</li>
+							<li class="list-group-item"> Прогресс курса:
+								<div class="progress">
+									<div class="progress-bar" role="progressbar"
+										style="width: {{ "%.2f" % (review.user.courses[review.course.stepic_id | string].score / review.course.score * 100) }}%"
+										aria-valuenow="{{ "%.2f" % (review.user.courses[review.course.stepic_id | string].score / review.course.score * 100) }}"
+										aria-valuemin="0"
+										aria-valuemax="{{ review.course.score }}">
+										{{ "%.2f" % (review.user.courses[review.course.stepic_id | string].score / review.course.score * 100) }}%
+									</div>
+								</div>
+							</li>
+							<li class="list-group-item"> Оценка: {{ review.score }} </li>
+							<li class="list-group-item"> Репутация: {{ review.user.reputation }}</li>
+						</ul>
+					</div>
+				</div>
+				<div class="col-9">
+					<div class="card-header">
+						Название курса: {{ review.course.title }}
+					</div>
+					<div class="card-header">
+						Дата: {{ review.create_date | date('%d.%m.%Y %H:%M') }}
+					</div>
+					<div class="card-body">
+						<p class="card-text">
+							{{ review.text | safe }}
+						</p>
+					</div>
+				</div>
+				<div class="card-footer">
+					<a href="{{ url_for('main.show_review', review_id=review.stepic_id) }}" class="btn btn-outline-primary">Ссылка на отзыв</a>
+				</div>
 			</div>
+		</div>
+		{% endfor %}
+	</div>
+</div>
+{% endmacro %}
+
+
+{% macro render_review_list_filter(current_user, sort_select_list, order_select_list) %}
+<div class="">
+	<form action="{{ url_for('main.update_reviews_filtration') }}" method="post">
+		<div class="row">
+			<div class="col-9 row">
+				{% for review_filter in current_user.review_filter_list %}
+					<div class="col">
+						<div class="form-group">
+							<legend class="col-form-label"> Параметр №{{ loop.index }} </legend>
+								<div class="form-check">
+									<select name="sorting_{{ loop.index }}" class="form-control">
+										{% for option in sort_select_list %}
+											<option value="{{ option.value }}" {% if review_filter.sort == option.value %} selected {% endif %}> {{ option.label }} </option>
+										{% endfor %}
+									</select>
+								</div>
+						</div>
+						<div class="form-group">
+							<legend class="col-form-label"> Порядок </legend>
+							<div class="form-check">
+								<select name="ordering_{{ loop.index }}" class="form-control">
+									{% for option in order_select_list %}
+										<option value="{{ option.value }}" {% if review_filter.order == option.value %} selected {% endif %}> {{ option.label }} </option>
+									{% endfor %}
+								</select>
+							</div>
+						</div>
+					</div>
+				{% endfor %}
+			</div>
+			<div class="col-3">
+				<div class="form-group">
+					<legend class="col-form-label"> Выбор курса </legend>
+						<div class="form-check">
+							<select name="course" class="form-control">
+								<option value="-1" {% if current_user.course_review_filter == -1 %} selected {% endif %}> Все </option>
+								{% for course in current_user.course_list %}
+									<option value="{{ course.stepic_id }}" {% if current_user.course_review_filter == course.stepic_id %} selected {% endif %}> {{ course.title }} </option>
+								{% endfor %}
+							</select>
+							<br>
+							<br>
+							<button type="submit" class="btn btn-lg btn-success">Применить</button>
+						</div>
+				</div>
+		</div>
 		</div>
 	</form>
 </div>

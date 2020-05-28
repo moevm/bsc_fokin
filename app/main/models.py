@@ -3,39 +3,6 @@ from flask_login import UserMixin
 from app.main.stepic import StepicApi
 
 
-class Filter(db.EmbeddedDocument):
-	sort = db.StringField(default='')
-	order = db.StringField(default='')
-
-class Teacher(UserMixin, db.Document):
-	serial_id = db.SequenceField()
-	stepic_id = db.IntField(unique=True)
-	full_name = db.StringField(default='')
-	avatar_url = db.StringField(default='')
-	course_list = db.ListField(default=[])
-	filter_list = db.ListField(db.EmbeddedDocumentField(Filter),
-							   default=[Filter(sort='reply_count', order = ''),
-										Filter(sort='epic_count', order = '-'),
-										Filter(sort='user_reputation', order = '-'),
-										Filter(sort='abuse_count', order = ''),
-										Filter(sort='time', order = '-')])
-
-	def get_id(self):
-		return str(self.id)
-
-	def get_info(self):
-		return self.to_json()
-
-	def update_filters(self, form):
-		for i in range(5):
-			self.filter_list[i] = Filter(sort=form.get('sorting_{}'.format(i + 1)), order=form.get('ordering_{}'.format(i + 1)))
-
-		return self
-
-	def get_filters(self):
-		return list(map(lambda x: '{}{}'.format(x.order, x.sort), self.filter_list))
-
-
 class Course(db.Document):
 	serial_id = db.SequenceField()
 	stepic_id = db.IntField(unique=True)
@@ -59,6 +26,57 @@ class Course(db.Document):
 		self.score=course_info['score']
 
 		return self
+
+
+class Filter(db.EmbeddedDocument):
+	sort = db.StringField(default='')
+	order = db.StringField(default='')
+
+
+class Teacher(UserMixin, db.Document):
+	serial_id = db.SequenceField()
+	stepic_id = db.IntField(unique=True)
+	full_name = db.StringField(default='')
+	avatar_url = db.StringField(default='')
+	course_list = db.ListField(db.ReferenceField(Course), default=[])
+	course_review_filter = db.IntField(default=-1)
+	course_comment_filter = db.IntField(default=-1)
+	review_filter_list = db.ListField(db.EmbeddedDocumentField(Filter),
+									  default=[Filter(sort='score', order = ''),
+											   Filter(sort='user_reputation', order = '-'),
+											   Filter(sort='create_date', order = '-')])
+	comment_filter_list = db.ListField(db.EmbeddedDocumentField(Filter),
+							   default=[Filter(sort='reply_count', order = ''),
+										Filter(sort='epic_count', order = '-'),
+										Filter(sort='user_reputation', order = '-'),
+										Filter(sort='abuse_count', order = ''),
+										Filter(sort='time', order = '-')])
+
+	def get_id(self):
+		return str(self.id)
+
+	def get_info(self):
+		return self.to_json()
+
+	def update_comment_filters(self, form):
+		for i in range(5):
+			self.comment_filter_list[i] = Filter(sort=form.get('sorting_{}'.format(i + 1)), order=form.get('ordering_{}'.format(i + 1)))
+		self.course_comment_filter = form.get('course')
+
+		return self
+
+	def update_review_filters(self, form):
+		for i in range(3):
+			self.review_filter_list[i] = Filter(sort=form.get('sorting_{}'.format(i + 1)), order=form.get('ordering_{}'.format(i + 1)))
+		self.course_review_filter = form.get('course')
+
+		return self
+
+	def get_comment_filters(self):
+		return list(map(lambda x: '{}{}'.format(x.order, x.sort), self.comment_filter_list))
+
+	def get_review_filters(self):
+		return list(map(lambda x: '{}{}'.format(x.order, x.sort), self.review_filter_list))
 
 
 class UserStep(db.EmbeddedDocument):
@@ -131,6 +149,13 @@ class User(db.Document):
 
 		return self
 
+	def add_course(self, review_info):
+		user_course = self.courses.get(str(review_info['course_id']))
+		if not user_course:
+			self.courses[str(review_info['course_id'])]=UserCourse()
+
+		return self
+
 	def update_course_grades(self, token):
 		stepic_api = StepicApi(token)
 		for course_id in self.courses:
@@ -183,6 +208,30 @@ class Comment(db.Document):
 		self.attachments=comment_info['attachments']
 		self.epic_count=comment_info['epic_count']
 		self.abuse_count=comment_info['abuse_count']
+
+		return self
+
+
+class Review(db.Document):
+	serial_id = db.SequenceField()
+	stepic_id = db.IntField(unique=True)
+	user = db.ReferenceField(User)
+	user_reputation = db.IntField(default=0)
+	course = db.ReferenceField(Course)
+	create_date = db.StringField(default='')
+	update_date = db.StringField(default='')
+	text = db.StringField(default='')
+	score = db.IntField(default=0)
+
+	def get_info(self):
+		return self.to_json()
+
+	def update_review(self, comment_info):
+		self.stepic_id=comment_info['stepic_id']
+		self.create_date=comment_info['create_date']
+		self.update_date=comment_info['update_date']
+		self.text=comment_info['text']
+		self.score=comment_info['score']
 
 		return self
 
