@@ -5,6 +5,14 @@ from app.main.stepic import StepicOauth, StepicApi
 from app.main.models import Teacher, User, Course, Comment
 
 COMMENTS_PER_PAGE = 5
+COMMENT_SORT_PARAMS = [{'value': 'reply_count', 'label': 'Ответы'},
+					   {'value': 'user_reputation', 'label': 'Репутация'},
+					   {'value': 'epic_count', 'label': 'Лайки'},
+					   {'value': 'abuse_count', 'label': 'Дизлайки'},
+					   {'value': 'time', 'label': 'Дата'}]
+COMMENT_ORDER_PARAMS = [{'value': '', 'label': 'По возрастанию'},
+						{'value': '-', 'label': 'По убыванию'}]
+
 stepic_oauth = StepicOauth()
 
 
@@ -53,13 +61,12 @@ def index():
 @main.route('/comments/<int:page>/', methods=['GET'])
 @login_required
 def show_all_comments(page=1):
-	order = '{}{}'.format(current_user.ordering, current_user.sorting)
-	comment_list = Comment.objects.order_by(order).paginate(page=page, per_page=COMMENTS_PER_PAGE)
+	comment_list = Comment.objects.order_by(*current_user.get_filters()).paginate(page=page, per_page=COMMENTS_PER_PAGE)
 	for comment in comment_list.items:
 		comment.user.update_course_grades(session['token']).save()
-	comment_list = Comment.objects.order_by(order).paginate(page=page, per_page=COMMENTS_PER_PAGE)
+	comment_list = Comment.objects.order_by(*current_user.get_filters()).paginate(page=page, per_page=COMMENTS_PER_PAGE)
 
-	return render_template("main/comments.html", comment_list=comment_list)
+	return render_template("main/comments.html", comment_list=comment_list, sort_select_list=COMMENT_SORT_PARAMS, order_select_list=COMMENT_ORDER_PARAMS)
 
 
 @main.route('/comments/', methods=['POST'])
@@ -87,7 +94,7 @@ def update_comments():
 				if not user:
 					user = User(stepic_id=comment_info['user_id'])
 				user = user.add_step(comment_info).save()
-				new_comment = Comment(user=user, course=course).update_comment(comment_info).save()
+				new_comment = Comment(user=user, user_reputation=user.reputation, course=course).update_comment(comment_info).save()
 	# update all users
 	user_id_list = User.objects().distinct('stepic_id')
 	user_list = stepic_api.get_users_info(user_id_list)

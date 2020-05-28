@@ -22,13 +22,13 @@
 		<div class="card border-secondary mb-3">
 			<div class="row no-gutters">
 				<div class="col-3">
-					<img src="{{ comment.user.avatar_url }}" class="card-img-top">
 					<div class="card-body">
-						<p class="card-text">
-							{{ comment.user.full_name }}
-						</p>
 						<ul class="list-group list-group-flush">
 							<li class="list-group-item">
+								<img src="{{ comment.user.avatar_url }}" class="card-img-top">
+							</li>
+							<li class="list-group-item"> {{ comment.user.full_name }}</li>
+							<li class="list-group-item"> Прогресс курса:
 								<div class="progress">
 									<div class="progress-bar" role="progressbar"
 										style="width: {{ "%.2f" % (comment.user.courses[comment.course.stepic_id | string].score / comment.course.score * 100) }}%"
@@ -40,17 +40,18 @@
 								</div>
 							</li>
 							<li class="list-group-item">
-								<span class="badge badge-success">{{ comment.epic_count }}</span>
-								<span class="badge badge-danger">{{ comment.abuse_count }}</span>
+								<span class="badge badge-success"> Лайки: {{ comment.epic_count }}</span>
+								<span class="badge badge-danger"> Дизлайки: {{ comment.abuse_count }}</span>
 							</li>
-							<li class="list-group-item">{{ comment.user.reputation }}</li>
+							<li class="list-group-item"> Ответы: {{ comment.reply_count }}</li>
+							<li class="list-group-item"> Репутация: {{ comment.user.reputation }}</li>
 							<li class="list-group-item">
 								{% if comment.user.courses[comment.course.stepic_id | string].steps[comment.step_id | string].is_passed  %}
-								<span class="badge badge-success">
+								<span class="badge badge-success"> Степ пройден.
 									{% else %}
-									<span class="badge badge-danger">
+									<span class="badge badge-danger"> Степ не пройден.
 										{% endif %}
-										{{ comment.user.courses[comment.course.stepic_id | string].steps[comment.step_id | string].total_submissions }}
+										Попытки: {{ comment.user.courses[comment.course.stepic_id | string].steps[comment.step_id | string].total_submissions }}
 									</span>
 							</li>
 						</ul>
@@ -77,54 +78,42 @@
 {% endmacro %}
 
 
-{% macro render_comment_list_filter(current_user) %}
+{% macro render_comment_list_filter(current_user, sort_select_list, order_select_list) %}
 <div class="">
 	<form action="{{ url_for('main.update_comments_filtration') }}" method="post">
-		<div class="form-row">
-			<div class="col">
-				<div class="form-group">
-					<legend class="col-form-label">Сортировка</legend>
-					<div class="form-check">
-						<input class="form-check-input" type="radio" name="sorting" value="epic_count" {% if current_user.sorting == "epic_count" %} checked {% endif %}>
-						<label class="form-check-label">
-							Лайки
-						</label>
+		<div class="row">
+			<div class="col-10 row">
+				{% for filter in current_user.filter_list %}
+					<div class="col">
+						<div class="form-group">
+							<legend class="col-form-label"> Параметр №{{ loop.index }} </legend>
+								<div class="form-check">
+									<select name="sorting_{{ loop.index }}" class="form-control">
+										{% for option in sort_select_list %}
+											<option value="{{ option.value }}" {% if filter.sort == option.value %} selected {% endif %}> {{ option.label }} </option>
+										{% endfor %}
+									</select>
+								</div>
+						</div>
+						<div class="form-group">
+							<legend class="col-form-label"> Порядок </legend>
+							<div class="form-check">
+								<select name="ordering_{{ loop.index }}" class="form-control">
+									{% for option in order_select_list %}
+										<option value="{{ option.value }}" {% if filter.order == option.value %} selected {% endif %}> {{ option.label }} </option>
+									{% endfor %}
+								</select>
+							</div>
+						</div>
 					</div>
-					<div class="form-check">
-						<input class="form-check-input" type="radio" name="sorting" value="abuse_count" {% if current_user.sorting == "abuse_count" %} checked {% endif %}>
-						<label class="form-check-label">
-							Дизлайки
-						</label>
-					</div>
-					<div class="form-check">
-						<input class="form-check-input" type="radio" name="sorting" value="reply_count" {% if current_user.sorting == "reply_count" %} checked {% endif %}>
-						<label class="form-check-label">
-							Ответы
-						</label>
-					</div>
-				</div>
+				{% endfor %}
 			</div>
-			<div class="col">
+			<div class="col-2">
 				<div class="form-group">
-					<legend class="col-form-label">Порядок</legend>
-					<div class="form-check">
-						<input class="form-check-input" type="radio" name="ordering" value="" {% if current_user.ordering == "" %} checked {% endif %}>
-						<label class="form-check-label">
-							По возрастанию
-						</label>
-					</div>
-					<div class="form-check">
-						<input class="form-check-input" type="radio" name="ordering" value="-" {% if current_user.ordering == "-" %} checked {% endif %}>
-						<label class="form-check-label">
-							По убыванию
-						</label>
-					</div>
+					<button type="submit" class="btn btn-success">Применить</button>
 				</div>
+				<a class="btn btn-warning ml-auto" href="{{ url_for('main.update_comments') }}">Обновить</a>
 			</div>
-		</div>
-		<div class="form-group row">
-			<button type="submit" class="btn btn-success">Применить</button>
-			<a class="btn btn-warning ml-auto" href="{{ url_for('main.update_comments') }}">Обновить</a>
 		</div>
 	</form>
 </div>

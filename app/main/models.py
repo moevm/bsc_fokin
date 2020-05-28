@@ -3,14 +3,22 @@ from flask_login import UserMixin
 from app.main.stepic import StepicApi
 
 
+class Filter(db.EmbeddedDocument):
+	sort = db.StringField(default='')
+	order = db.StringField(default='')
+
 class Teacher(UserMixin, db.Document):
 	serial_id = db.SequenceField()
 	stepic_id = db.IntField(unique=True)
 	full_name = db.StringField(default='')
 	avatar_url = db.StringField(default='')
 	course_list = db.ListField(default=[])
-	sorting = db.StringField(default='epic_count')
-	ordering = db.StringField(default='')
+	filter_list = db.ListField(db.EmbeddedDocumentField(Filter),
+							   default=[Filter(sort='reply_count', order = ''),
+										Filter(sort='epic_count', order = '-'),
+										Filter(sort='user_reputation', order = '-'),
+										Filter(sort='abuse_count', order = ''),
+										Filter(sort='time', order = '-')])
 
 	def get_id(self):
 		return str(self.id)
@@ -19,10 +27,13 @@ class Teacher(UserMixin, db.Document):
 		return self.to_json()
 
 	def update_filters(self, form):
-		self.sorting = form.get('sorting')
-		self.ordering = form.get('ordering')
+		for i in range(5):
+			self.filter_list[i] = Filter(sort=form.get('sorting_{}'.format(i + 1)), order=form.get('ordering_{}'.format(i + 1)))
 
 		return self
+
+	def get_filters(self):
+		return list(map(lambda x: '{}{}'.format(x.order, x.sort), self.filter_list))
 
 
 class Course(db.Document):
@@ -136,6 +147,7 @@ class Comment(db.Document):
 	parent_id = db.IntField()
 	step_id = db.IntField()
 	user = db.ReferenceField(User)
+	user_reputation = db.IntField(default=0)
 	course = db.ReferenceField(Course)
 	user_role = db.StringField(default='')
 	time = db.StringField(default='')

@@ -13,10 +13,10 @@ pip install -r requirements.txt
 ```
 * Запустить mongodb
 ```
-service mongod start
+service mongodb start
 ```
 * Запустить сервер
 ```
-python manage.py runserver -p 8080
+python manage.py runserver -p 8000
 ```
-* Перейти по адресу http://localhost:8080
+* Перейти по адресу http://localhost:8000
