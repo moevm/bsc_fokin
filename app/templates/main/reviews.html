@@ -19,7 +19,7 @@
       <h2 style="text-align: center;">Список отзывов</h2>
     </div>
     <div class="col-4" style="text-align: center;">
-      <a class="btn btn-lg btn-warning" href="{{ url_for('main.update_reviews') }}">Обновить</a>
+      <a class="btn btn-warning" href="{{ url_for('main.update_reviews') }}">Обновить</a>
     </div>
   </div>
   {{ macros.render_review_list(review_list) }}

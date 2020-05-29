@@ -183,7 +183,7 @@ def update_reviews():
 	for course in current_user.course_list:
 		review_list = stepic_api.get_course_reviews(course.stepic_id)
 		for review_info in review_list:
-			old_review = Comment.objects(stepic_id=review_info['stepic_id']).first()
+			old_review = Review.objects(stepic_id=review_info['stepic_id']).first()
 			if old_review:
 				old_review.update_review(review_info).save()
 			else:
