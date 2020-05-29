@@ -10,7 +10,11 @@
 		<div class="card mb-3">
 			<div class="row">
 				<div class="col-2">
-					<img src="{{ course.cover }}" class="card-img">
+					{% if course.cover != "" %}
+						<img src="{{ course.cover }}" class="card-img">
+					{% else %}
+						<img src="{{ url_for('static', filename = 'images/course_cover.png') }}" class="card-img">
+					{% endif %}
 				</div>
 				<div class="col-8">
 					<div class="card-body">
@@ -26,8 +30,7 @@
 		{% endfor %}
 	</div>
 	<div class="col-6" style="text-align: center;">
-		<a class="btn btn-outline-info mr-2" href="{{ url_for('main.update_courses') }}">Обновить</a>
-		<a class="btn btn-outline-success mr-2" href="#">Сохранить</a>
+		<a class="btn btn-lg btn-warning mr-2" href="{{ url_for('main.update_courses') }}">Обновить</a>
 	</div>
 </div>
 

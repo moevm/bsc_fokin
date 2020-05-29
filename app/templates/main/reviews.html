@@ -1,0 +1,31 @@
+{% extends "main/base.html" %}
+{% import "main/macros.html" as macros %}
+
+{% block extra_css %}
+
+<link rel="stylesheet" href="{{ url_for('static', filename = 'css/comments.css') }}">
+
+{% endblock %}
+
+{% block content %}
+
+<h1 style="text-align: center;">Отзывы</h1>
+<div class="jumbotron rounded bg-light">
+  {{ macros.render_review_list_filter(current_user, sort_select_list, order_select_list) }}
+</div>
+<div class="review-list">
+  <div class="row">
+    <div class="col-8">
+      <h2 style="text-align: center;">Список отзывов</h2>
+    </div>
+    <div class="col-4" style="text-align: center;">
+      <a class="btn btn-warning" href="{{ url_for('main.update_reviews') }}">Обновить</a>
+    </div>
+  </div>
+  {{ macros.render_review_list(review_list) }}
+</div>
+<div class="jumbotron rounded bg-light">
+  {{ macros.render_navigation(review_list, 'main.show_all_reviews') }}
+</div>
+
+{% endblock %}

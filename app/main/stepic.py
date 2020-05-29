@@ -85,6 +85,15 @@ class StepicApi:
 
 		return response
 
+	def __fetch_reviews(self, course_id, page):
+		url = 'https://stepik.org/api/course-reviews?course={}&page={}'.format(course_id, page)
+		print(url)
+		response = requests.get(
+			url,
+			headers={'Authorization': 'Bearer {}'.format(self.__token)}).json()
+
+		return response
+
 	# **************************************************************************
 	# Public functions
 	# **************************************************************************
@@ -124,7 +133,7 @@ class StepicApi:
 					'stepic_id': course['id'],
 					'title': course['title'],
 					'summary': course['summary'],
-					'cover': 'https://stepik.org{}'.format(course['cover']),
+					'cover': 'https://stepik.org{}'.format(course['cover']) if course['cover'] else "",
 					'cert_reg_threshold': course['certificate_regular_threshold'],
 					'cert_dist_threshold': course['certificate_distinction_threshold'],
 					'score': self.get_course_score(course)}
@@ -164,5 +173,28 @@ class StepicApi:
 
 		return comment_list
 
+	def get_course_reviews(self, course_id):
+		page = 1
+		review_list = []
+		while page:
+			response = self.__fetch_reviews(course_id, page)
+			review_list += [
+				{
+					'stepic_id': review['id'],
+					'course_id': course_id,
+					'user_id': review['user'],
+					'create_date': review['create_date'],
+					'update_date': review['update_date'],
+					'text': review['text'],
+					'score': review['score']
+				}
+				for review in response['course-reviews']]
+			page = page + 1 if response['meta']['has_next'] else 0
+
+		return review_list
+
 	def get_user_course_grades(self, course_id, user_id):
 		return self.__fetch_course_grades(course_id, user_id)[STEPIC_COURSE_GRADES]
+
+	def get_step_info(self, step_id):
+		return self.__fetch_object(STEPIC_STEPS, step_id)
