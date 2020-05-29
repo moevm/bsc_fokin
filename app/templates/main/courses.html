@@ -10,7 +10,11 @@
 		<div class="card mb-3">
 			<div class="row">
 				<div class="col-2">
-					<img src="{{ course.cover }}" class="card-img">
+					{% if course.cover != "" %}
+						<img src="{{ course.cover }}" class="card-img">
+					{% else %}
+						<img src="{{ url_for('static', filename = 'images/course_cover.png') }}" class="card-img">
+					{% endif %}
 				</div>
 				<div class="col-8">
 					<div class="card-body">

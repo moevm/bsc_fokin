@@ -19,6 +19,11 @@ REVIEW_SORT_PARAMS = [{'value': 'user_reputation', 'label': 'Репутация'
 stepic_oauth = StepicOauth()
 
 
+@main.route('/favicon.ico')
+def favicon():
+    return redirect(url_for('static', filename='images/favicon.ico'))
+
+
 @main.route('/login/', methods=['GET', 'POST'])
 def login():
 	return stepic_oauth.app.authorize(callback=url_for('.authorization', _external=True))

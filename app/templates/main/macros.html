@@ -158,14 +158,19 @@
 									</div>
 								</div>
 							</li>
-							<li class="list-group-item"> Оценка: {{ review.score }} </li>
+							<li class="list-group-item">
+								Оценка:
+								{% for i in range(review.score) %}
+									<i class="fa fa-star"></i>
+								{% endfor %}
+							</li>
 							<li class="list-group-item"> Репутация: {{ review.user.reputation }}</li>
 						</ul>
 					</div>
 				</div>
 				<div class="col-9">
 					<div class="card-header">
-						Название курса: {{ review.course.title }}
+						Курс: {{ review.course.title }}
 					</div>
 					<div class="card-header">
 						Дата: {{ review.create_date | date('%d.%m.%Y %H:%M') }}

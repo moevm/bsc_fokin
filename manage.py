@@ -15,15 +15,5 @@ def _jinja2_filter_datetime(date, format):
         return parse(date).strftime(format)
 
 
-@manager.option('-stepic_id')
-def new_teacher(stepic_id):
-	try:
-		teacher = Teacher(stepic_id=stepic_id, full_name='', avatar_url='')
-		teacher.save()
-		print("Base teacher added")
-	except Exception as e:
-		print(e)
-
-
 if __name__ == '__main__':
 	manager.run()

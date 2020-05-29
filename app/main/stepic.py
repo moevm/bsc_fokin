@@ -133,7 +133,7 @@ class StepicApi:
 					'stepic_id': course['id'],
 					'title': course['title'],
 					'summary': course['summary'],
-					'cover': 'https://stepik.org{}'.format(course['cover']),
+					'cover': 'https://stepik.org{}'.format(course['cover']) if course['cover'] else "",
 					'cert_reg_threshold': course['certificate_regular_threshold'],
 					'cert_dist_threshold': course['certificate_distinction_threshold'],
 					'score': self.get_course_score(course)}
