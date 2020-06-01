@@ -70,10 +70,7 @@ def index():
 @main.route('/comments/<int:page>/', methods=['GET'])
 @login_required
 def show_all_comments(page=1):
-	if current_user.course_comment_filter == -1:
-		comment_list = Comment.objects(course__in=current_user.course_list).order_by(*current_user.get_comment_filters()).paginate(page=page, per_page=COMMENTS_PER_PAGE)
-	else:
-		comment_list = Comment.objects(course=Course.objects(stepic_id=current_user.course_comment_filter).first()).order_by(*current_user.get_comment_filters()).paginate(page=page, per_page=COMMENTS_PER_PAGE)
+	comment_list = current_user.filter_and_sort_comments().paginate(page=page, per_page=COMMENTS_PER_PAGE)
 	for comment in comment_list.items:
 		comment.user.update_course_grades(session['token']).save()
 
@@ -155,11 +152,7 @@ def update_courses():
 @main.route('/reviews/<int:page>/', methods=['GET'])
 @login_required
 def show_all_reviews(page=1):
-	if current_user.course_review_filter == -1:
-		review_list = Review.objects(course__in=current_user.course_list).order_by(*current_user.get_review_filters()).paginate(page=page, per_page=COMMENTS_PER_PAGE)
-		print(len(Review.objects(course__in=current_user.course_list).paginate(page=page, per_page=COMMENTS_PER_PAGE).items))
-	else:
-		review_list = Review.objects(course=Course.objects(stepic_id=current_user.course_review_filter).first()).order_by(*current_user.get_review_filters()).paginate(page=page, per_page=COMMENTS_PER_PAGE)
+	review_list = current_user.filter_and_sort_reviews().paginate(page=page, per_page=COMMENTS_PER_PAGE)
 	for review in review_list.items:
 		review.user.update_course_grades(session['token']).save()
 
