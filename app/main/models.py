@@ -33,6 +33,8 @@ class Option(db.EmbeddedDocument):
 	order = db.StringField(default='')
 	filter_gte = db.IntField(default=-1)
 	filter_lte = db.IntField(default=-1)
+	datetime_gte = db.StringField(default='-')
+	datetime_lte = db.StringField(default='-')
 
 
 class Teacher(UserMixin, db.Document):
@@ -65,7 +67,9 @@ class Teacher(UserMixin, db.Document):
 			self.comment_option_list[i] = Option(sort=form.get('sorting_{}'.format(i + 1)),
 												 order=form.get('ordering_{}'.format(i + 1)),
 												 filter_gte=form.get('filter_gte_{}'.format(i + 1)) if form.get('filter_gte_{}'.format(i + 1)) != '-' else -1,
- 												 filter_lte=form.get('filter_lte_{}'.format(i + 1)) if form.get('filter_lte_{}'.format(i + 1)) != '-' else -1)
+ 												 filter_lte=form.get('filter_lte_{}'.format(i + 1)) if form.get('filter_lte_{}'.format(i + 1)) != '-' else -1,
+												 datetime_gte=form.get('datetime_gte_{}'.format(i + 1)) if form.get('datetime_gte_{}'.format(i + 1)) else '-',
+												 datetime_lte=form.get('datetime_lte_{}'.format(i + 1)) if form.get('datetime_lte_{}'.format(i + 1)) else '-')
 		self.course_comment_filter = form.get('course')
 
 		return self
@@ -75,7 +79,9 @@ class Teacher(UserMixin, db.Document):
 			self.review_option_list[i] = Option(sort=form.get('sorting_{}'.format(i + 1)),
 												order=form.get('ordering_{}'.format(i + 1)),
 												filter_gte=form.get('filter_gte_{}'.format(i + 1)) if form.get('filter_gte_{}'.format(i + 1)) != '-' else -1,
-												filter_lte=form.get('filter_lte_{}'.format(i + 1)) if form.get('filter_lte_{}'.format(i + 1)) != '-' else -1)
+												filter_lte=form.get('filter_lte_{}'.format(i + 1)) if form.get('filter_lte_{}'.format(i + 1)) != '-' else -1,
+												datetime_gte=form.get('datetime_gte_{}'.format(i + 1)) if form.get('datetime_gte_{}'.format(i + 1)) else '-',
+												datetime_lte=form.get('datetime_lte_{}'.format(i + 1)) if form.get('datetime_lte_{}'.format(i + 1)) else '-')
 		self.course_review_filter = form.get('course')
 
 		return self
@@ -91,21 +97,25 @@ class Teacher(UserMixin, db.Document):
 		# 1. course
 		comment_list = Comment.objects(course__in=self.course_list) if self.course_comment_filter == -1 else Comment.objects(course=Course.objects(stepic_id=self.course_comment_filter).first())
 		# 2. reply_count
-		comment_reply_count_object = self.get_option_by_sort('reply_count', self.comment_option_list)
-		comment_list = comment_list.filter(reply_count__gte=comment_reply_count_object.filter_gte) if comment_reply_count_object.filter_gte != -1 else comment_list
-		comment_list = comment_list.filter(reply_count__lte=comment_reply_count_object.filter_lte) if comment_reply_count_object.filter_lte != -1 else comment_list
+		comment_reply_count_option = self.get_option_by_sort('reply_count', self.comment_option_list)
+		comment_list = comment_list.filter(reply_count__gte=comment_reply_count_option.filter_gte) if comment_reply_count_option.filter_gte != -1 else comment_list
+		comment_list = comment_list.filter(reply_count__lte=comment_reply_count_option.filter_lte) if comment_reply_count_option.filter_lte != -1 else comment_list
 		# 3. epic_count
-		comment_epic_count_object = self.get_option_by_sort('epic_count', self.comment_option_list)
-		comment_list = comment_list.filter(epic_count__gte=comment_epic_count_object.filter_gte) if comment_epic_count_object.filter_gte != -1 else comment_list
-		comment_list = comment_list.filter(epic_count__lte=comment_epic_count_object.filter_lte) if comment_epic_count_object.filter_lte != -1 else comment_list
+		comment_epic_count_option = self.get_option_by_sort('epic_count', self.comment_option_list)
+		comment_list = comment_list.filter(epic_count__gte=comment_epic_count_option.filter_gte) if comment_epic_count_option.filter_gte != -1 else comment_list
+		comment_list = comment_list.filter(epic_count__lte=comment_epic_count_option.filter_lte) if comment_epic_count_option.filter_lte != -1 else comment_list
 		# 4. user_reputation
-		comment_user_reputation_object = self.get_option_by_sort('user_reputation', self.comment_option_list)
-		comment_list = comment_list.filter(user_reputation__gte=comment_user_reputation_object.filter_gte) if comment_user_reputation_object.filter_gte != -1 else comment_list
-		comment_list = comment_list.filter(user_reputation__lte=comment_user_reputation_object.filter_lte) if comment_user_reputation_object.filter_lte != -1 else comment_list
+		comment_user_reputation_option = self.get_option_by_sort('user_reputation', self.comment_option_list)
+		comment_list = comment_list.filter(user_reputation__gte=comment_user_reputation_option.filter_gte) if comment_user_reputation_option.filter_gte != -1 else comment_list
+		comment_list = comment_list.filter(user_reputation__lte=comment_user_reputation_option.filter_lte) if comment_user_reputation_option.filter_lte != -1 else comment_list
 		# 5. abuse_count
-		comment_abuse_count_object = self.get_option_by_sort('abuse_count', self.comment_option_list)
-		comment_list = comment_list.filter(abuse_count__gte=comment_abuse_count_object.filter_gte) if comment_abuse_count_object.filter_gte != -1 else comment_list
-		comment_list = comment_list.filter(abuse_count__lte=comment_abuse_count_object.filter_lte) if comment_abuse_count_object.filter_lte != -1 else comment_list
+		comment_abuse_count_option = self.get_option_by_sort('abuse_count', self.comment_option_list)
+		comment_list = comment_list.filter(abuse_count__gte=comment_abuse_count_option.filter_gte) if comment_abuse_count_option.filter_gte != -1 else comment_list
+		comment_list = comment_list.filter(abuse_count__lte=comment_abuse_count_option.filter_lte) if comment_abuse_count_option.filter_lte != -1 else comment_list
+		# 6. time
+		comment_time_option = self.get_option_by_sort('time', self.comment_option_list)
+		comment_list = comment_list.filter(time__gte=comment_time_option.datetime_gte) if comment_time_option.datetime_gte != '-' else comment_list
+		comment_list = comment_list.filter(time__lte=comment_time_option.datetime_lte) if comment_time_option.datetime_lte != '-' else comment_list
 		# sort
 		comment_list = comment_list.order_by(*self.get_comment_filters())
 
@@ -116,13 +126,17 @@ class Teacher(UserMixin, db.Document):
 		# 1. course
 		review_list = Review.objects(course__in=self.course_list) if self.course_review_filter == -1 else Review.objects(course=Course.objects(stepic_id=self.course_review_filter).first())
 		# 2. score
-		review_score_object = self.get_option_by_sort('score', self.review_option_list)
-		review_list = review_list.filter(score__gte=review_score_object.filter_gte) if review_score_object.filter_gte != -1 else review_list
-		review_list = review_list.filter(score__lte=review_score_object.filter_lte) if review_score_object.filter_lte != -1 else review_list
+		review_score_option = self.get_option_by_sort('score', self.review_option_list)
+		review_list = review_list.filter(score__gte=review_score_option.filter_gte) if review_score_option.filter_gte != -1 else review_list
+		review_list = review_list.filter(score__lte=review_score_option.filter_lte) if review_score_option.filter_lte != -1 else review_list
 		# 3. user_reputation
-		review_user_reputation_object = self.get_option_by_sort('user_reputation', self.review_option_list)
-		review_list = review_list.filter(user_reputation__gte=review_user_reputation_object.filter_gte) if review_user_reputation_object.filter_gte != -1 else review_list
-		review_list = review_list.filter(user_reputation__lte=review_user_reputation_object.filter_lte) if review_user_reputation_object.filter_lte != -1 else review_list
+		review_user_reputation_option = self.get_option_by_sort('user_reputation', self.review_option_list)
+		review_list = review_list.filter(user_reputation__gte=review_user_reputation_option.filter_gte) if review_user_reputation_option.filter_gte != -1 else review_list
+		review_list = review_list.filter(user_reputation__lte=review_user_reputation_option.filter_lte) if review_user_reputation_option.filter_lte != -1 else review_list
+		# 3. create_date
+		review_create_date_option = self.get_option_by_sort('create_date', self.review_option_list)
+		review_list = review_list.filter(create_date__gte=review_create_date_option.datetime_gte) if review_create_date_option.datetime_gte != '-' else review_list
+		review_list = review_list.filter(create_date__lte=review_create_date_option.datetime_lte) if review_create_date_option.datetime_lte != '-' else review_list
 		# sort
 		review_list = review_list.order_by(*self.get_review_filters())
 

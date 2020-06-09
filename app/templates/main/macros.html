@@ -102,19 +102,31 @@
 							<legend class="col-form-label"> Фильтр </legend>
 							<div class="form-check">
 								От
-								<input name="filter_gte_{{ loop.index }}" class="form-control"
-								{% if comment_filter.filter_gte == -1 %}
-									value="-""
+								<input class="form-control"
+								{% if comment_filter.sort == "time" %}
+									name="datetime_gte_{{ loop.index }}"
+									value="{{ comment_filter.datetime_gte }}"
 								{% else %}
-									value="{{ comment_filter.filter_gte }}"
+									name="filter_gte_{{ loop.index }}"
+									{% if comment_filter.filter_gte == -1 %}
+										value="-""
+									{% else %}
+										value="{{ comment_filter.filter_gte }}"
+									{% endif %}
 								{% endif %}
 								>
 								до
-								<input name="filter_lte_{{ loop.index }}" class="form-control"
-								{% if comment_filter.filter_lte == -1 %}
-									value="-""
+								<input class="form-control"
+								{% if comment_filter.sort == "time" %}
+									name="datetime_lte_{{ loop.index }}"
+									value="{{ comment_filter.datetime_lte }}"
 								{% else %}
-									value="{{ comment_filter.filter_lte }}"
+									name="filter_lte_{{ loop.index }}"
+									{% if comment_filter.filter_lte == -1 %}
+										value="-""
+									{% else %}
+										value="{{ comment_filter.filter_lte }}"
+									{% endif %}
 								{% endif %}
 								>
 							</div>
@@ -234,19 +246,31 @@
 							<legend class="col-form-label"> Фильтр </legend>
 							<div class="form-check">
 								От
-								<input name="filter_gte_{{ loop.index }}" class="form-control"
-								{% if review_filter.filter_gte == -1 %}
-									value="-""
+								<input class="form-control"
+								{% if review_filter.sort == "create_date" %}
+									name="datetime_gte_{{ loop.index }}"
+									value="{{ review_filter.datetime_gte }}"
 								{% else %}
-									value="{{ review_filter.filter_gte }}"
+									name="filter_gte_{{ loop.index }}"
+									{% if review_filter.filter_gte == -1 %}
+										value="-""
+									{% else %}
+										value="{{ review_filter.filter_gte }}"
+									{% endif %}
 								{% endif %}
 								>
 								до
-								<input name="filter_lte_{{ loop.index }}" class="form-control"
-								{% if review_filter.filter_lte == -1 %}
-									value="-""
+								<input class="form-control"
+								{% if review_filter.sort == "create_date" %}
+									name="datetime_lte_{{ loop.index }}"
+									value="{{ review_filter.datetime_lte }}"
 								{% else %}
-									value="{{ review_filter.filter_lte }}"
+									name="filter_lte_{{ loop.index }}"
+									{% if review_filter.filter_lte == -1 %}
+										value="-""
+									{% else %}
+										value="{{ review_filter.filter_lte }}"
+									{% endif %}
 								{% endif %}
 								>
 							</div>
