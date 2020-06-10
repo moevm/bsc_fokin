@@ -109,7 +109,7 @@
 								{% else %}
 									name="filter_gte_{{ loop.index }}"
 									{% if comment_filter.filter_gte == -1 %}
-										value="-""
+										value="-"
 									{% else %}
 										value="{{ comment_filter.filter_gte }}"
 									{% endif %}
@@ -123,7 +123,7 @@
 								{% else %}
 									name="filter_lte_{{ loop.index }}"
 									{% if comment_filter.filter_lte == -1 %}
-										value="-""
+										value="-"
 									{% else %}
 										value="{{ comment_filter.filter_lte }}"
 									{% endif %}
@@ -157,6 +157,12 @@
 							<br>
 							<br>
 							<button type="submit" class="btn btn-lg btn-success">Применить</button>
+							<br>
+							<br>
+							<button type="button" class="btn btn-secondary" data-toggle="tooltip" data-placement="bottom" disabled
+								title="Допустимые значения фильтров:&#10;&#8226; Дата: строка формата YYYY-MM-DDTHH:mm:ssT&#10;&#8226; Остальные поля: целое число > 0&#10;&#8226; Отсутствие значения: дефис (-)">
+									Справка
+							</button>
 						</div>
 				</div>
 		</div>
@@ -253,7 +259,7 @@
 								{% else %}
 									name="filter_gte_{{ loop.index }}"
 									{% if review_filter.filter_gte == -1 %}
-										value="-""
+										value="-"
 									{% else %}
 										value="{{ review_filter.filter_gte }}"
 									{% endif %}
@@ -267,7 +273,7 @@
 								{% else %}
 									name="filter_lte_{{ loop.index }}"
 									{% if review_filter.filter_lte == -1 %}
-										value="-""
+										value="-"
 									{% else %}
 										value="{{ review_filter.filter_lte }}"
 									{% endif %}
@@ -301,6 +307,12 @@
 							<br>
 							<br>
 							<button type="submit" class="btn btn-lg btn-success">Применить</button>
+							<br>
+							<br>
+							<button type="button" class="btn btn-secondary" data-toggle="tooltip" data-placement="bottom" disabled
+								title="Допустимые значения фильтров:&#10;&#8226; Дата: строка формата YYYY-MM-DDTHH:mm:ssT&#10;&#8226; Оценка: целое число из диапазона 1-5&#10;&#8226; Репутация: целое число > 0&#10;&#8226; Отсутствие значения: дефис (-)">
+									Справка
+							</button>
 						</div>
 				</div>
 		</div>
