@@ -1,6 +1,7 @@
 from app.create_app import db, login_manager
 from flask_login import UserMixin
 from app.main.stepic import StepicApi
+import re
 
 
 class Course(db.Document):
@@ -68,8 +69,8 @@ class Teacher(UserMixin, db.Document):
 												 order=form.get('ordering_{}'.format(i + 1)),
 												 filter_gte=form.get('filter_gte_{}'.format(i + 1)) if form.get('filter_gte_{}'.format(i + 1)) != '-' else -1,
  												 filter_lte=form.get('filter_lte_{}'.format(i + 1)) if form.get('filter_lte_{}'.format(i + 1)) != '-' else -1,
-												 datetime_gte=form.get('datetime_gte_{}'.format(i + 1)) if form.get('datetime_gte_{}'.format(i + 1)) else '-',
-												 datetime_lte=form.get('datetime_lte_{}'.format(i + 1)) if form.get('datetime_lte_{}'.format(i + 1)) else '-')
+												 datetime_gte=form.get('datetime_gte_{}'.format(i + 1)) if form.get('datetime_gte_{}'.format(i + 1)) and re.fullmatch(r'\d{4}\-\d{2}\-\d{2}T\d{2}:\d{2}:\d{2}Z', form.get('datetime_gte_{}'.format(i + 1))) else '-',
+												 datetime_lte=form.get('datetime_lte_{}'.format(i + 1)) if form.get('datetime_lte_{}'.format(i + 1)) and re.fullmatch(r'\d{4}\-\d{2}\-\d{2}T\d{2}:\d{2}:\d{2}Z', form.get('datetime_lte_{}'.format(i + 1))) else '-')
 		self.course_comment_filter = form.get('course')
 
 		return self
@@ -80,8 +81,8 @@ class Teacher(UserMixin, db.Document):
 												order=form.get('ordering_{}'.format(i + 1)),
 												filter_gte=form.get('filter_gte_{}'.format(i + 1)) if form.get('filter_gte_{}'.format(i + 1)) != '-' else -1,
 												filter_lte=form.get('filter_lte_{}'.format(i + 1)) if form.get('filter_lte_{}'.format(i + 1)) != '-' else -1,
-												datetime_gte=form.get('datetime_gte_{}'.format(i + 1)) if form.get('datetime_gte_{}'.format(i + 1)) else '-',
-												datetime_lte=form.get('datetime_lte_{}'.format(i + 1)) if form.get('datetime_lte_{}'.format(i + 1)) else '-')
+												datetime_gte=form.get('datetime_gte_{}'.format(i + 1)) if form.get('datetime_gte_{}'.format(i + 1)) and re.fullmatch(r'\d{4}\-\d{2}\-\d{2}T\d{2}:\d{2}:\d{2}Z', form.get('datetime_gte_{}'.format(i + 1))) else '-',
+												datetime_lte=form.get('datetime_lte_{}'.format(i + 1)) if form.get('datetime_lte_{}'.format(i + 1)) and re.fullmatch(r'\d{4}\-\d{2}\-\d{2}T\d{2}:\d{2}:\d{2}Z', form.get('datetime_lte_{}'.format(i + 1))) else '-')
 		self.course_review_filter = form.get('course')
 
 		return self

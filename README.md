@@ -35,6 +35,6 @@ sudo ./docker/deploy_docker.sh -d /полный/путь/к/папке/прив�
 ```
 Пример:
 ```
-sudo ./docker/deploy_docker.sh -d /home/user/bsc/bsc_fokin/mongo -l /home/user/Programs/bsc/bsc_fokin/logs
+sudo ./docker/deploy_docker.sh -d /home/user/bsc_fokin/mongo -l /home/user/bsc_fokin/logs
 ```
 * Перейти по адресу http://ip-адрес:8000
