@@ -32,6 +32,9 @@ python manage.py runserver -p 8000
 * Запустить скрипт сборки образа и запуска контейнера с правами суперпользователя
 ```
 sudo ./docker/deploy_docker.sh -d /полный/путь/к/папке/привязки/ -l /полный/путь/к/папке/с/логами/
-sudo ./docker/deploy_docker.sh -d /home/foksen/Programs/bsc/bsc_fokin/mongo -l /home/foksen/Programs/bsc/bsc_fokin/logs
 ```
-* Перейти по адресу http://localhost:8000
+Пример:
+```
+sudo ./docker/deploy_docker.sh -d /home/user/bsc/bsc_fokin/mongo -l /home/user/Programs/bsc/bsc_fokin/logs
+```
+* Перейти по адресу http://ip-адрес:8000

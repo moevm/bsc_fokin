@@ -86,7 +86,7 @@
 	<form action="{{ url_for('main.update_comments_filtration') }}" method="post">
 		<div class="row">
 			<div class="col-10 row">
-				{% for comment_filter in current_user.comment_filter_list %}
+				{% for comment_filter in current_user.comment_option_list %}
 					<div class="col">
 						<div class="form-group">
 							<legend class="col-form-label"> Параметр №{{ loop.index }} </legend>
@@ -97,6 +97,39 @@
 										{% endfor %}
 									</select>
 								</div>
+						</div>
+						<div class="form-group">
+							<legend class="col-form-label"> Фильтр </legend>
+							<div class="form-check">
+								От
+								<input class="form-control"
+								{% if comment_filter.sort == "time" %}
+									name="datetime_gte_{{ loop.index }}"
+									value="{{ comment_filter.datetime_gte }}"
+								{% else %}
+									name="filter_gte_{{ loop.index }}"
+									{% if comment_filter.filter_gte == -1 %}
+										value="-""
+									{% else %}
+										value="{{ comment_filter.filter_gte }}"
+									{% endif %}
+								{% endif %}
+								>
+								до
+								<input class="form-control"
+								{% if comment_filter.sort == "time" %}
+									name="datetime_lte_{{ loop.index }}"
+									value="{{ comment_filter.datetime_lte }}"
+								{% else %}
+									name="filter_lte_{{ loop.index }}"
+									{% if comment_filter.filter_lte == -1 %}
+										value="-""
+									{% else %}
+										value="{{ comment_filter.filter_lte }}"
+									{% endif %}
+								{% endif %}
+								>
+							</div>
 						</div>
 						<div class="form-group">
 							<legend class="col-form-label"> Порядок </legend>
@@ -197,7 +230,7 @@
 	<form action="{{ url_for('main.update_reviews_filtration') }}" method="post">
 		<div class="row">
 			<div class="col-9 row">
-				{% for review_filter in current_user.review_filter_list %}
+				{% for review_filter in current_user.review_option_list %}
 					<div class="col">
 						<div class="form-group">
 							<legend class="col-form-label"> Параметр №{{ loop.index }} </legend>
@@ -208,6 +241,39 @@
 										{% endfor %}
 									</select>
 								</div>
+						</div>
+						<div class="form-group"
+							<legend class="col-form-label"> Фильтр </legend>
+							<div class="form-check">
+								От
+								<input class="form-control"
+								{% if review_filter.sort == "create_date" %}
+									name="datetime_gte_{{ loop.index }}"
+									value="{{ review_filter.datetime_gte }}"
+								{% else %}
+									name="filter_gte_{{ loop.index }}"
+									{% if review_filter.filter_gte == -1 %}
+										value="-""
+									{% else %}
+										value="{{ review_filter.filter_gte }}"
+									{% endif %}
+								{% endif %}
+								>
+								до
+								<input class="form-control"
+								{% if review_filter.sort == "create_date" %}
+									name="datetime_lte_{{ loop.index }}"
+									value="{{ review_filter.datetime_lte }}"
+								{% else %}
+									name="filter_lte_{{ loop.index }}"
+									{% if review_filter.filter_lte == -1 %}
+										value="-""
+									{% else %}
+										value="{{ review_filter.filter_lte }}"
+									{% endif %}
+								{% endif %}
+								>
+							</div>
 						</div>
 						<div class="form-group">
 							<legend class="col-form-label"> Порядок </legend>
