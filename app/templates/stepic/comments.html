@@ -1,5 +1,5 @@
-{% extends "main/base.html" %}
-{% import "main/macros.html" as macros %}
+{% extends "stepic/base.html" %}
+{% import "stepic/macros.html" as macros %}
 
 {% block extra_css %}
 
@@ -19,13 +19,13 @@
 			<h2 style="text-align: center;">Список комментариев</h2>
 		</div>
 		<div class="col-4" style="text-align: center;">
-			<a class="btn btn-warning" href="{{ url_for('main.update_comments') }}">Обновить</a>
+			<a class="btn btn-warning" href="{{ url_for('stepic.update_comments') }}">Обновить</a>
 		</div>
 	</div>
 	{{ macros.render_comment_list(comment_list) }}
 </div>
 <div class="jumbotron rounded bg-light">
-	{{ macros.render_navigation(comment_list, 'main.show_all_comments') }}
+	{{ macros.render_navigation(comment_list, 'stepic.show_all_comments') }}
 </div>
 
 {% endblock %}
