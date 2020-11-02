@@ -1,21 +1,69 @@
 {% extends "main/base.html" %}
 
+{% block title %} Главная {% endblock %}
+
 {% block extra_css %}
 
-<link rel="stylesheet" href="{{ url_for('static', filename = 'css/index.css') }}">
+<!-- <link rel="stylesheet" href="{{ url_for('static', filename = 'css/index.css') }}"> -->
 
 {% endblock %}
 
 {% block content %}
 
-<div class="overlay">
-	<div class="description text-center">
-		<h2>Добро пожаловать в курсовой аггрегатор</h2>
-		<p>
-			Для использования требуется авторизация через Stepik.
-		</p>
-		<a class="btn-lg btn-secondary" href="{{ url_for('main.login') }}" style="text-align: center; margin-top: 20rem">Войти</a>
+<main role="main">
+	<div class="container">
+		<div class="row">
+			<div class="col-md-6">
+				<div class="card text-white" style="background-color: #54ad54">
+					<h5 class="card-header"> Stepic </h5>
+					<div class="card-body">
+						<h5 class="card-title"> Агрегатор для МООК Stepic </h5>
+						{% if current_user.is_authenticated and current_user.is_stepic_teacher() %}
+						<p class="card-text"> Вы уже авторизованы как {{ current_user.full_name }} </p>
+						<a href="{{ url_for('stepic.login') }}" class="btn btn-secondary"> Войти </a>
+						<a href="{{ url_for('stepic.logout') }}" class="btn btn-danger"> Выйти </a>
+						{% else %}
+						<p class="card-text"> Вход при помощи учётной записи Stepic </p>
+						<a href="{{ url_for('stepic.login') }}" class="btn btn-secondary"> Войти </a>
+						{% endif %}
+					</div>
+				</div>
+			</div>
+			<div class="col-md-6">
+				<div class="card text-white" style="background-color: #f98012">
+					<h5 class="card-header"> Moodle </h5>
+					<div class="card-body">
+						<h5 class="card-title"> Агрегатор для МООК Moodle </h5>
+						{% if current_user.is_authenticated and current_user.is_moodle_teacher() %}
+						<p class="card-text"> Вы уже авторизованы как {{ current_user.full_name }} </p>
+						<a href="{{ url_for('moodle.login') }}" class="btn btn-secondary"> Войти </a>
+						<a href="{{ url_for('moodle.logout') }}" class="btn btn-danger"> Выйти </a>
+						{% else %}
+						<p class="card-text"> Вход при помощи учётной записи Moodle </p>
+						<form action="{{ url_for('moodle.login') }}" method="post">
+							<div class="form-group">
+								<legend class="col-form-label"> Адрес Moodle </legend>
+								<div class="form-check">
+									<input class="form-control" name="site_url">
+								</div>
+								<legend class="col-form-label"> Логин </legend>
+								<div class="form-check">
+									<input class="form-control" name="username">
+								</div>
+								<legend class="col-form-label"> Пароль </legend>
+								<div class="form-check">
+									<input class="form-control" name="password" type="password">
+								</div>
+								<br>
+								<button type="submit" class="btn btn-secondary"> Войти </button>
+							</div>
+						</form>
+						{% endif %}
+					</div>
+				</div>
+			</div>
+		</div>
 	</div>
-</div>
+</main>
 
 {% endblock %}

@@ -71,7 +71,7 @@
 					</div>
 				</div>
 				<div class="card-footer">
-					<a href="{{ url_for('main.show_comment', step_id=comment.step_id, comment_id=comment.stepic_id) }}" class="btn btn-outline-primary">Ссылка на обсуждение</a>
+					<a href="{{ url_for('stepic.show_comment', step_id=comment.step_id, comment_id=comment.stepic_id) }}" class="btn btn-outline-primary">Ссылка на обсуждение</a>
 				</div>
 			</div>
 		</div>
@@ -83,7 +83,7 @@
 
 {% macro render_comment_list_filter(current_user, sort_select_list, order_select_list) %}
 <div class="">
-	<form action="{{ url_for('main.update_comments_filtration') }}" method="post">
+	<form action="{{ url_for('stepic.update_comments_filtration') }}" method="post">
 		<div class="row">
 			<div class="col-10 row">
 				{% for comment_filter in current_user.comment_option_list %}
@@ -160,7 +160,7 @@
 							<br>
 							<br>
 							<button type="button" class="btn btn-secondary" data-toggle="tooltip" data-placement="bottom" disabled
-								title="Допустимые значения фильтров:&#10;&#8226; Дата: строка формата YYYY-MM-DDTHH:mm:ssT&#10;&#8226; Остальные поля: целое число > 0&#10;&#8226; Отсутствие значения: дефис (-)">
+								title="Допустимые значения фильтров:&#10;&#8226; Дата: строка формата YYYY-MM-DDThh:mm:ssZ&#10;&#8226; Остальные поля: целое число > 0&#10;&#8226; Отсутствие значения: дефис (-)">
 									Справка
 							</button>
 						</div>
@@ -221,7 +221,7 @@
 					</div>
 				</div>
 				<div class="card-footer">
-					<a href="{{ url_for('main.show_review', review_id=review.stepic_id) }}" class="btn btn-outline-primary">Ссылка на отзыв</a>
+					<a href="{{ url_for('stepic.show_review', review_id=review.stepic_id) }}" class="btn btn-outline-primary">Ссылка на отзыв</a>
 				</div>
 			</div>
 		</div>
@@ -233,7 +233,7 @@
 
 {% macro render_review_list_filter(current_user, sort_select_list, order_select_list) %}
 <div class="">
-	<form action="{{ url_for('main.update_reviews_filtration') }}" method="post">
+	<form action="{{ url_for('stepic.update_reviews_filtration') }}" method="post">
 		<div class="row">
 			<div class="col-9 row">
 				{% for review_filter in current_user.review_option_list %}
@@ -310,7 +310,7 @@
 							<br>
 							<br>
 							<button type="button" class="btn btn-secondary" data-toggle="tooltip" data-placement="bottom" disabled
-								title="Допустимые значения фильтров:&#10;&#8226; Дата: строка формата YYYY-MM-DDTHH:mm:ssT&#10;&#8226; Оценка: целое число из диапазона 1-5&#10;&#8226; Репутация: целое число > 0&#10;&#8226; Отсутствие значения: дефис (-)">
+								title="Допустимые значения фильтров:&#10;&#8226; Дата: строка формата YYYY-MM-DDThh:mm:ssZ&#10;&#8226; Оценка: целое число из диапазона 1-5&#10;&#8226; Репутация: целое число > 0&#10;&#8226; Отсутствие значения: дефис (-)">
 									Справка
 							</button>
 						</div>

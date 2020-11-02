@@ -1,0 +1,39 @@
+{% extends "moodle/base.html" %}
+
+{% block title %} - курсы {% endblock %}
+
+{% block content %}
+
+<h1 style="text-align: center;"> Курсы </h1>
+<div class="row">
+	<div class="col-6">
+		<h2 style="text-align: center;"> Список курсов </h2>
+		{% for course in course_list %}
+		<div class="card mb-3">
+			<div class="row">
+				<div class="col-2">
+					{% if course.cover != "" %}
+						<img src="{{ course.cover }}" class="card-img">
+					{% else %}
+						<img src="{{ url_for('static', filename = 'images/course_cover.png') }}" class="card-img">
+					{% endif %}
+				</div>
+				<div class="col-8">
+					<div class="card-body">
+						<h5 class="card-title">{{ course.title }}</h5>
+						<p class="card-text"><small class="text-muted">{{ course.moodle_id }}</small></p>
+					</div>
+				</div>
+				<div class="col-2">
+
+				</div>
+			</div>
+		</div>
+		{% endfor %}
+	</div>
+	<div class="col-6" style="text-align: center;">
+		<a class="btn btn-lg btn-warning mr-2" href="{{ url_for('moodle.update_courses') }}"> Обновить </a>
+	</div>
+</div>
+
+{% endblock %}
