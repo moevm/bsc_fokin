@@ -148,9 +148,9 @@ def update_courses():
 	stepic_api = StepicApi(session['token'])
 	course_list = stepic_api.get_user_courses(session['stepic_id'])
 	for course_info in course_list:
-		course = Course.objects(stepic_id=course_info['stepic_id']).first()
+		course = Course.objects(stepic_id=course_info.get('stepic_id')).first()
 		if not course:
-			course = Course()
+			course = Course(stepic_id=course_info.get('stepic_id'))
 			current_user.course_list.append(course)
 		course.update_course(course_info).save()
 	current_user.save()

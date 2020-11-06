@@ -12,20 +12,19 @@
 		<div class="card mb-3">
 			<div class="row">
 				<div class="col-2">
-					{% if course.cover != "" %}
-						<img src="{{ course.cover }}" class="card-img">
-					{% else %}
-						<img src="{{ url_for('static', filename = 'images/course_cover.png') }}" class="card-img">
-					{% endif %}
+					<img src="{{ course.cover }}" class="card-img">
 				</div>
 				<div class="col-8">
 					<div class="card-body">
-						<h5 class="card-title">{{ course.title }}</h5>
-						<p class="card-text"><small class="text-muted">{{ course.moodle_id }}</small></p>
+						<h5 class="card-title"> {{ course.full_name }} </h5>
+						<p class="card-text"><small class="text-muted"> {{ course.moodle_id }} </small></p>
 					</div>
 				</div>
 				<div class="col-2">
-
+					<div class="card-body">
+						<p class="card-text"> Форумы: </p>
+						<h5 class="card-title"> {{ course.forum_count }} </h5>
+					</div>
 				</div>
 			</div>
 		</div>

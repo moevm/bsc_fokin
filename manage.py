@@ -1,3 +1,4 @@
+from datetime import datetime
 from dateutil.parser import parse
 from flask_script import Manager
 from app.create_app import app
@@ -14,8 +15,13 @@ manager = Manager(app)
 
 @app.template_filter('date')
 def _jinja2_filter_datetime(date, format):
-	if date :
+	if date:
 		return parse(date).strftime(format)
+
+@app.template_filter('date_from_timestamp')
+def _jinja2_filter_datetime(date, format):
+	if date:
+		return datetime.fromtimestamp(date).strftime(format)
 
 
 if __name__ == '__main__':

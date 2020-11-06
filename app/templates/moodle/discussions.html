@@ -1,0 +1,33 @@
+{% extends "moodle/base.html" %}
+{% import "moodle/macros.html" as macros %}
+
+{% block title %} - обсуждения {% endblock %}
+
+{% block extra_css %}
+
+<link rel="stylesheet" href="{{ url_for('static', filename = 'css/comments.css') }}">
+
+{% endblock %}
+
+{% block content %}
+
+<h1 style="text-align: center;"> Обсуждения </h1>
+<div class="jumbotron rounded bg-light">
+	Здесь будет блок фильтрации и сортировки
+</div>
+<div class="comment-list">
+	<div class="row">
+		<div class="col-8">
+			<h2 style="text-align: center;"> Список обсуждений </h2>
+		</div>
+		<div class="col-4" style="text-align: center;">
+			<a class="btn btn-warning" href="{{ url_for('moodle.update_discussions') }}"> Обновить </a>
+		</div>
+	</div>
+	{{ macros.render_discussion_list(discussion_list) }}
+</div>
+<div class="jumbotron rounded bg-light">
+	{{ macros.render_navigation(discussion_list, 'moodle.show_all_discussions') }}
+</div>
+
+{% endblock %}

@@ -9,6 +9,7 @@ STEPIC_STEPS = 'step'
 STEPIC_PROGRESSES = 'progresse'
 STEPIC_COURSE_GRADES = 'course-grades'
 STEPIC_USERS = 'user'
+COURSE_COVER = '/static/images/stepic_course_cover.png'
 
 
 class StepicOauth:
@@ -133,7 +134,7 @@ class StepicApi:
 					'stepic_id': course['id'],
 					'title': course['title'],
 					'summary': course['summary'],
-					'cover': 'https://stepik.org{}'.format(course['cover']) if course['cover'] else "",
+					'cover': 'https://stepik.org{}'.format(course['cover']) if course['cover'] else COURSE_COVER,
 					'cert_reg_threshold': course['certificate_regular_threshold'],
 					'cert_dist_threshold': course['certificate_distinction_threshold'],
 					'score': self.get_course_score(course)}
