@@ -9,7 +9,7 @@ class Course(db.Document):
 	stepic_id = db.IntField(unique=True)
 	title = db.StringField(default='')
 	summary = db.StringField(default='')
-	cover = db.StringField(default='')
+	cover = db.StringField(default='/static/images/stepic_course_cover.png')
 	cert_reg_threshold = db.IntField(default=0)
 	cert_dist_threshold = db.IntField(default=0)
 	score = db.IntField(default=0)
@@ -18,7 +18,6 @@ class Course(db.Document):
 		return self.to_json()
 
 	def update_course(self, course_info):
-		self.stepic_id=course_info['stepic_id']
 		self.title=course_info['title']
 		self.summary=course_info['summary']
 		self.cover=course_info['cover']

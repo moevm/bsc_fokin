@@ -3,23 +3,31 @@ import requests
 LOGIN_ENDPOINT = '/login/token.php'
 WEBSERVICE_ENDPOINT = '/webservice/rest/server.php'
 MOODLE_SERVICE = 'moodle_mobile_app'
+COURSE_COVER = '/static/images/moodle_course_cover.jpg'
+# ******************************************************************************
 PARAM_TOKEN = 'wstoken'
 PARAM_FUNCTION = 'wsfunction'
 PARAM_FORMAT = 'moodlewsrestformat'
+# ******************************************************************************
+PARAM_USER_ID = 'userid'
+PARAM_COURSE_ID = 'courseid'
+PARAM_COURSE_IDS = 'courseids[]'
+PARAM_FORUM_ID = 'forumid'
+PARAM_DISCUSSION_ID = 'discussionid'
 
 
 class MoodleAuth:
 
 	def __init__(self, form):
-		self.__site_url = form.get('site_url')
+		self.__moodle_url = form.get('moodle_url')
 		self.__username = form.get('username')
 		self.__password = form.get('password')
 
-	def get_site_url(self):
-		return self.__site_url
+	def get_moodle_url(self):
+		return self.__moodle_url
 
 	def get_user_token(self):
-		url = self.__site_url + LOGIN_ENDPOINT
+		url = self.__moodle_url + LOGIN_ENDPOINT
 		param_dict = {
 			'username': self.__username,
 			'password': self.__password,
@@ -33,12 +41,12 @@ class MoodleAuth:
 
 class MoodleApi:
 
-	def __init__(self, site_url, token):
-		self.__site_url = site_url
+	def __init__(self, moodle_url, token):
+		self.__moodle_url = moodle_url
 		self.__token = token
 
 	def __get_site_info(self):
-		url = self.__site_url + WEBSERVICE_ENDPOINT
+		url = self.__moodle_url + WEBSERVICE_ENDPOINT
 		param_dict = {
 			PARAM_TOKEN: self.__token,
 			PARAM_FUNCTION: 'core_webservice_get_site_info',
@@ -46,11 +54,33 @@ class MoodleApi:
 
 		return requests.get(url, params=param_dict).json()
 
-	def __get_course_content(self):
-		url = self.__site_url + WEBSERVICE_ENDPOINT
+	def __get_users_courses(self, user_id):
+		url = self.__moodle_url + WEBSERVICE_ENDPOINT
 		param_dict = {
+			PARAM_USER_ID: user_id,
 			PARAM_TOKEN: self.__token,
-			PARAM_FUNCTION: 'core_course_get_content',
+			PARAM_FUNCTION: 'core_enrol_get_users_courses',
+			PARAM_FORMAT: 'json'}
+
+		return requests.get(url, params=param_dict).json()
+
+	# course_id should be list, but is's int
+	def __get_forums_by_courses(self, course_id):
+		url = self.__moodle_url + WEBSERVICE_ENDPOINT
+		param_dict = {
+			PARAM_COURSE_IDS: course_id,
+			PARAM_TOKEN: self.__token,
+			PARAM_FUNCTION: 'mod_forum_get_forums_by_courses',
+			PARAM_FORMAT: 'json'}
+
+		return requests.get(url, params=param_dict).json()
+
+	def __get_forum_discussions(self, forum_id):
+		url = self.__moodle_url + WEBSERVICE_ENDPOINT
+		param_dict = {
+			PARAM_FORUM_ID: forum_id,
+			PARAM_TOKEN: self.__token,
+			PARAM_FUNCTION: 'mod_forum_get_forum_discussions',
 			PARAM_FORMAT: 'json'}
 
 		return requests.get(url, params=param_dict).json()
@@ -60,3 +90,55 @@ class MoodleApi:
 	# **************************************************************************
 	def get_current_user_profile(self):
 		return self.__get_site_info()
+
+	def get_user_courses(self, user_id):
+		course_list = self.__get_users_courses(user_id)
+		course_list = [
+			{
+				'moodle_id': course.get('id'),
+				'short_name': course.get('shortname'),
+				'full_name': course.get('fullname'),
+				'display_name': course.get('displayname'),
+				'summary': course.get('summary'),
+				'enrolled_user_count': course.get('enrolledusercount'),
+				'visible': True if course.get('visible') == 1 else False,
+				'format': course.get('format'),
+				'show_grades': course.get('showgrades'),
+				'start_date': course.get('startdate'),
+				'cover': course.get('overviewfiles')[0].get('fileurl').replace('/webservice', '') if course.get('overviewfiles') else COURSE_COVER}
+			for course in course_list]
+
+		return course_list
+
+	def get_course_forums(self, course_id):
+		forum_list = self.__get_forums_by_courses(course_id)
+		forum_list = [
+			{
+				'moodle_id': forum.get('id'),
+				'type': forum.get('type'),
+				'name': forum.get('name'),
+				'intro': forum.get('intro'),
+				'scale': forum.get('scale')}
+			for forum in forum_list]
+
+		return forum_list
+
+	def get_forum_discussions(self, forum_id):
+		discussion_list = self.__get_forum_discussions(forum_id).get('discussions')
+		discussion_list = [
+			{
+				'moodle_id': discussion.get('id'),
+				'discussion_id': discussion.get('discussion'),
+				'name': discussion.get('name'),
+				'subject': discussion.get('subject'),
+				'message': discussion.get('message'),
+				'created': discussion.get('created'),
+				'user_id': discussion.get('user_id'),
+				'user_full_name': discussion.get('userfullname'),
+				'user_picture_url': discussion.get('userpictureurl'),
+				'time_modified': discussion.get('timemodified'),
+				'user_modified': discussion.get('usermodified'),
+				'num_replies': discussion.get('numreplies')}
+			for discussion in discussion_list]
+
+		return discussion_list
