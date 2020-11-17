@@ -2,8 +2,6 @@ from flask_login import UserMixin
 from app.create_app import db, login_manager
 
 class BaseTeacher(UserMixin, db.Document):
-	serial_id = db.SequenceField()
-
 	meta = {'allow_inheritance': True}
 
 	def get_info(self):

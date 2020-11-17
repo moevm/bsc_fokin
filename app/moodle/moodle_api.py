@@ -124,7 +124,7 @@ class MoodleApi:
 		return forum_list
 
 	def get_forum_discussions(self, forum_id):
-		discussion_list = self.__get_forum_discussions(forum_id).get('discussions')
+		discussion_list = self.__get_forum_discussions(forum_id).get('discussions') if self.__get_forum_discussions(forum_id).get('discussions') else []
 		discussion_list = [
 			{
 				'moodle_id': discussion.get('id'),
