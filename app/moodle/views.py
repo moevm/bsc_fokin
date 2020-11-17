@@ -35,14 +35,14 @@ def authorization():
 		return redirect(url_for('main.index'))
 	moodle_url = moodle_auth.get_moodle_url()
 	user_profile = MoodleApi(moodle_url, token).get_current_user_profile()
-	MoodleTeacher.objects(moodle_id=user_profile['userid']).update_one(
+	MoodleTeacher.objects(moodle_id=user_profile.get('userid')).update_one(
 		moodle_url=moodle_url,
 		token=token,
-		username=user_profile['username'],
-		full_name=user_profile['fullname'],
-		avatar_url=user_profile['userpictureurl'],
+		username=user_profile.get('username'),
+		full_name=user_profile.get('fullname'),
+		avatar_url=user_profile.get('userpictureurl'),
 		upsert=True)
-	teacher = MoodleTeacher.objects(moodle_id=user_profile['userid']).first()
+	teacher = MoodleTeacher.objects(moodle_id=user_profile.get('userid')).first()
 	login_user(teacher)
 
 	return redirect(url_for('.show_all_courses'))
@@ -76,7 +76,7 @@ def update_courses():
 	for course_info in course_list:
 		course = MoodleCourse.objects(moodle_id=course_info.get('moodle_id')).first()
 		if not course:
-			course = MoodleCourse(moodle_id=course_info.get('moodle_id'))
+			course = MoodleCourse(moodle_id=course_info.get('moodle_id')).save()
 			current_user.course_list.append(course)
 		# update course forums
 		forum_list = moodle_api.get_course_forums(course.moodle_id)

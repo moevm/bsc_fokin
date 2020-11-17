@@ -38,6 +38,7 @@ class Option(db.EmbeddedDocument):
 
 
 class StepicTeacher(BaseTeacher):
+	serial_id = db.SequenceField()
 	stepic_id = db.IntField(unique=True)
 	full_name = db.StringField(default='')
 	avatar_url = db.StringField(default='')
