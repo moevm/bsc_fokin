@@ -129,9 +129,8 @@ class MoodleCourse(db.Document):
 
 
 class MoodleTeacher(BaseTeacher):
-	serial_id = db.SequenceField()
 	moodle_url = db.StringField(default='')
-	moodle_id = db.IntField(unique=True)
+	moodle_id = db.IntField()
 	token = db.StringField(default='')
 	username = db.StringField(default='')
 	full_name = db.StringField(default='')
