@@ -4,7 +4,7 @@ from app.stepic.stepic_api import StepicApi
 import re
 
 
-class Course(db.Document):
+class StepicCourse(db.Document):
 	serial_id = db.SequenceField()
 	stepic_id = db.IntField(unique=True)
 	title = db.StringField(default='')
@@ -38,11 +38,10 @@ class Option(db.EmbeddedDocument):
 
 
 class StepicTeacher(BaseTeacher):
-	serial_id = db.SequenceField()
-	stepic_id = db.IntField(unique=True)
+	stepic_id = db.IntField()
 	full_name = db.StringField(default='')
 	avatar_url = db.StringField(default='')
-	course_list = db.ListField(db.ReferenceField(Course), default=[])
+	course_list = db.ListField(db.ReferenceField(StepicCourse), default=[])
 	course_review_filter = db.IntField(default=-1)
 	course_comment_filter = db.IntField(default=-1)
 	review_option_list = db.ListField(db.EmbeddedDocumentField(Option),
@@ -92,7 +91,7 @@ class StepicTeacher(BaseTeacher):
 	def filter_and_sort_comments(self):
 		# filter
 		# 1. course
-		comment_list = Comment.objects(course__in=self.course_list) if self.course_comment_filter == -1 else Comment.objects(course=Course.objects(stepic_id=self.course_comment_filter).first())
+		comment_list = StepicComment.objects(course__in=self.course_list) if self.course_comment_filter == -1 else StepicComment.objects(course=StepicCourse.objects(stepic_id=self.course_comment_filter).first())
 		# 2. reply_count
 		comment_reply_count_option = self.get_option_by_sort('reply_count', self.comment_option_list)
 		comment_list = comment_list.filter(reply_count__gte=comment_reply_count_option.filter_gte) if comment_reply_count_option.filter_gte != -1 else comment_list
@@ -121,7 +120,7 @@ class StepicTeacher(BaseTeacher):
 	def filter_and_sort_reviews(self):
 		# filter
 		# 1. course
-		review_list = Review.objects(course__in=self.course_list) if self.course_review_filter == -1 else Review.objects(course=Course.objects(stepic_id=self.course_review_filter).first())
+		review_list = StepicReview.objects(course__in=self.course_list) if self.course_review_filter == -1 else StepicReview.objects(course=StepicCourse.objects(stepic_id=self.course_review_filter).first())
 		# 2. score
 		review_score_option = self.get_option_by_sort('score', self.review_option_list)
 		review_list = review_list.filter(score__gte=review_score_option.filter_gte) if review_score_option.filter_gte != -1 else review_list
@@ -145,7 +144,7 @@ class StepicTeacher(BaseTeacher):
 				return option
 
 
-class UserStep(db.EmbeddedDocument):
+class StepicUserStep(db.EmbeddedDocument):
 	score = db.IntField(default=0)
 	is_passed = db.BooleanField(default=False)
 	is_passed_on_comment = db.BooleanField(default=False)
@@ -163,9 +162,9 @@ class UserStep(db.EmbeddedDocument):
 		return self
 
 
-class UserCourse(db.EmbeddedDocument):
+class StepicUserCourse(db.EmbeddedDocument):
 	score = db.IntField(default=0)
-	steps = db.MapField(db.EmbeddedDocumentField(UserStep))
+	steps = db.MapField(db.EmbeddedDocumentField(StepicUserStep))
 
 	def get_info(self):
 		return self.to_json()
@@ -173,7 +172,7 @@ class UserCourse(db.EmbeddedDocument):
 	def add_step(self, comment_info):
 		user_step = self.steps.get(str(comment_info['step_id']))
 		if not user_step:
-			self.steps[str(comment_info['step_id'])]=UserStep()
+			self.steps[str(comment_info['step_id'])]=StepicUserStep()
 
 		return self
 
@@ -188,13 +187,13 @@ class UserCourse(db.EmbeddedDocument):
 		return self
 
 
-class User(db.Document):
+class StepicUser(db.Document):
 	serial_id = db.SequenceField()
 	stepic_id = db.IntField(unique=True)
 	full_name = db.StringField(default='')
 	avatar_url = db.StringField(default='')
 	reputation = db.IntField(default=0)
-	courses = db.MapField(db.EmbeddedDocumentField(UserCourse))
+	courses = db.MapField(db.EmbeddedDocumentField(StepicUserCourse))
 
 	def get_info(self):
 		return self.to_json()
@@ -204,11 +203,11 @@ class User(db.Document):
 		self.avatar_url=user_info['avatar']
 		self.reputation=user_info['reputation']
 		# update reputation in users comments and reviews
-		user_comment_list = Comment.objects(user=self)
+		user_comment_list = StepicComment.objects(user=self)
 		for comment in user_comment_list:
 			comment.user_reputation = self.reputation
 			comment.save()
-		user_review_list = Review.objects(user=self)
+		user_review_list = StepicReview.objects(user=self)
 		for review in user_review_list:
 			review.user_reputation = self.reputation
 			review.save()
@@ -220,14 +219,14 @@ class User(db.Document):
 		if user_course:
 			user_course.add_step(comment_info)
 		else:
-			self.courses[str(comment_info['course_id'])]=UserCourse().add_step(comment_info)
+			self.courses[str(comment_info['course_id'])]=StepicUserCourse().add_step(comment_info)
 
 		return self
 
 	def add_course(self, review_info):
 		user_course = self.courses.get(str(review_info['course_id']))
 		if not user_course:
-			self.courses[str(review_info['course_id'])]=UserCourse()
+			self.courses[str(review_info['course_id'])]=StepicUserCourse()
 
 		return self
 
@@ -241,14 +240,14 @@ class User(db.Document):
 		return self
 
 
-class Comment(db.Document):
+class StepicComment(db.Document):
 	serial_id = db.SequenceField()
 	stepic_id = db.IntField(unique=True)
 	parent_id = db.IntField()
 	step_id = db.IntField()
-	user = db.ReferenceField(User)
+	user = db.ReferenceField(StepicUser)
 	user_reputation = db.IntField(default=0)
-	course = db.ReferenceField(Course)
+	course = db.ReferenceField(StepicCourse)
 	user_role = db.StringField(default='')
 	time = db.StringField(default='')
 	last_time = db.StringField(default='')
@@ -287,12 +286,12 @@ class Comment(db.Document):
 		return self
 
 
-class Review(db.Document):
+class StepicReview(db.Document):
 	serial_id = db.SequenceField()
 	stepic_id = db.IntField(unique=True)
-	user = db.ReferenceField(User)
+	user = db.ReferenceField(StepicUser)
 	user_reputation = db.IntField(default=0)
-	course = db.ReferenceField(Course)
+	course = db.ReferenceField(StepicCourse)
 	create_date = db.StringField(default='')
 	update_date = db.StringField(default='')
 	text = db.StringField(default='')

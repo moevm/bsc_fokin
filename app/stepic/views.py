@@ -4,7 +4,7 @@ from functools import wraps
 from app.main import main
 from app.stepic import stepic
 from app.stepic.stepic_api import StepicOauth, StepicApi
-from app.stepic.models import StepicTeacher, User, Course, Comment, Review
+from app.stepic.models import StepicTeacher, StepicUser, StepicCourse, StepicComment, StepicReview
 
 COMMENTS_PER_PAGE = 5
 COMMENT_SORT_PARAMS = [
@@ -58,13 +58,11 @@ def authorization():
 	response = stepic_oauth.app.authorized_response()
 	session['token'] = response['access_token']
 	user_profile = StepicApi(session['token']).get_current_user_profile()
-	stepic_id = user_profile['id']
-	session['stepic_id'] = stepic_id
-	StepicTeacher.objects(stepic_id=stepic_id).update_one(
+	teacher = StepicTeacher.objects(stepic_id=user_profile['id']).modify(
 		full_name=user_profile['full_name'],
 		avatar_url=user_profile['avatar'],
-		upsert=True)
-	teacher = StepicTeacher.objects(stepic_id=stepic_id).first()
+		upsert=True,
+		new=True)
 	login_user(teacher)
 
 	return redirect(url_for('.show_all_comments'))
@@ -102,20 +100,20 @@ def update_comments():
 	for course in current_user.course_list:
 		comment_list = stepic_api.get_course_comments(course.stepic_id)
 		for comment_info in comment_list:
-			old_comment = Comment.objects(stepic_id=comment_info['stepic_id']).first()
+			old_comment = StepicComment.objects(stepic_id=comment_info['stepic_id']).first()
 			if old_comment:
 				old_comment.update_comment(comment_info).save()
 			else:
-				user = User.objects(stepic_id=comment_info['user_id']).first()
+				user = StepicUser.objects(stepic_id=comment_info['user_id']).first()
 				if not user:
-					user = User(stepic_id=comment_info['user_id'])
+					user = StepicUser(stepic_id=comment_info['user_id'])
 				user = user.add_step(comment_info).save()
-				new_comment = Comment(user=user, user_reputation=user.reputation, course=course).update_comment(comment_info).save()
+				new_comment = StepicComment(user=user, user_reputation=user.reputation, course=course).update_comment(comment_info).save()
 	# update all users
-	user_id_list = User.objects().distinct('stepic_id')
+	user_id_list = StepicUser.objects().distinct('stepic_id')
 	user_list = stepic_api.get_users_info(user_id_list)
 	for user_info in user_list:
-		User.objects(stepic_id=user_info['id']).first().update_user(user_info).save()
+		StepicUser.objects(stepic_id=user_info['id']).first().update_user(user_info).save()
 
 	return redirect(url_for('.show_all_comments'))
 
@@ -146,11 +144,11 @@ def show_all_courses():
 @stepic_login_required
 def update_courses():
 	stepic_api = StepicApi(session['token'])
-	course_list = stepic_api.get_user_courses(session['stepic_id'])
+	course_list = stepic_api.get_user_courses(current_user.stepic_id)
 	for course_info in course_list:
-		course = Course.objects(stepic_id=course_info.get('stepic_id')).first()
+		course = StepicCourse.objects(stepic_id=course_info.get('stepic_id')).first()
 		if not course:
-			course = Course(stepic_id=course_info.get('stepic_id'))
+			course = StepicCourse(stepic_id=course_info.get('stepic_id'))
 			current_user.course_list.append(course)
 		course.update_course(course_info).save()
 	current_user.save()
@@ -190,20 +188,20 @@ def update_reviews():
 	for course in current_user.course_list:
 		review_list = stepic_api.get_course_reviews(course.stepic_id)
 		for review_info in review_list:
-			old_review = Review.objects(stepic_id=review_info['stepic_id']).first()
+			old_review = StepicReview.objects(stepic_id=review_info['stepic_id']).first()
 			if old_review:
 				old_review.update_review(review_info).save()
 			else:
-				user = User.objects(stepic_id=review_info['user_id']).first()
+				user = StepicUser.objects(stepic_id=review_info['user_id']).first()
 				if not user:
-					user = User(stepic_id=review_info['user_id']).save()
+					user = StepicUser(stepic_id=review_info['user_id']).save()
 				user = user.add_course(review_info).save()
-				new_review = Review(user=user, user_reputation=user.reputation, course=course).update_review(review_info).save()
+				new_review = StepicReview(user=user, user_reputation=user.reputation, course=course).update_review(review_info).save()
 	# update all users
-	user_id_list = User.objects().distinct('stepic_id')
+	user_id_list = StepicUser.objects().distinct('stepic_id')
 	user_list = stepic_api.get_users_info(user_id_list)
 	for user_info in user_list:
-		User.objects(stepic_id=user_info['id']).first().update_user(user_info).save()
+		StepicUser.objects(stepic_id=user_info['id']).first().update_user(user_info).save()
 
 	return redirect(url_for('.show_all_reviews'))
 
@@ -212,7 +210,7 @@ def update_reviews():
 @login_required
 @stepic_login_required
 def show_review(review_id):
-	review = Review.objects(stepic_id=review_id).first()
+	review = StepicReview.objects(stepic_id=review_id).first()
 	review_url = 'https://stepik.org/course/{}/reviews/{}'.format(review.course.stepic_id, review.stepic_id)
 
 	return redirect(review_url)

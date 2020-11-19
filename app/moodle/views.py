@@ -35,14 +35,22 @@ def authorization():
 		return redirect(url_for('main.index'))
 	moodle_url = moodle_auth.get_moodle_url()
 	user_profile = MoodleApi(moodle_url, token).get_current_user_profile()
-	MoodleTeacher.objects(moodle_id=user_profile.get('userid')).update_one(
+	# MoodleTeacher.objects(moodle_id=user_profile.get('userid')).update_one(
+	# 	moodle_url=moodle_url,
+	# 	token=token,
+	# 	username=user_profile.get('username'),
+	# 	full_name=user_profile.get('fullname'),
+	# 	avatar_url=user_profile.get('userpictureurl'),
+	# 	upsert=True)
+	# teacher = MoodleTeacher.objects(moodle_id=user_profile.get('userid')).first()
+	teacher = MoodleTeacher.objects(moodle_id=user_profile.get('userid')).modify(
 		moodle_url=moodle_url,
 		token=token,
 		username=user_profile.get('username'),
 		full_name=user_profile.get('fullname'),
 		avatar_url=user_profile.get('userpictureurl'),
-		upsert=True)
-	teacher = MoodleTeacher.objects(moodle_id=user_profile.get('userid')).first()
+		upsert=True,
+		new=True)
 	login_user(teacher)
 
 	return redirect(url_for('.show_all_courses'))
