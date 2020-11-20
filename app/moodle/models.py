@@ -45,9 +45,7 @@ class MoodleDiscussion(db.Document):
 	subject = db.StringField(default='')
 	message = db.StringField(default='')
 	created = db.IntField(default=0)
-	user_id = db.IntField(default=0) # ? ReferenceField
-	user_full_name = db.StringField(default='')
-	user_picture_url = db.StringField(default='')
+	user = db.ReferenceField('MoodleUser')
 	time_modified = db.IntField(default=0)
 	user_modified = db.IntField(default=0) # ? ReferenceField
 	num_replies = db.IntField(default=0)
@@ -61,12 +59,14 @@ class MoodleDiscussion(db.Document):
 		self.subject = discussion_info.get('subject')
 		self.message = discussion_info.get('message')
 		self.created = discussion_info.get('created')
-		self.user_id = discussion_info.get('user_id')
-		self.user_full_name = discussion_info.get('user_full_name')
-		self.user_picture_url = discussion_info.get('user_picture_url')
 		self.time_modified = discussion_info.get('time_modified')
 		self.user_modified = discussion_info.get('user_modified')
 		self.num_replies = discussion_info.get('num_replies')
+		self.user = MoodleUser.objects(moodle_id=discussion_info.get('user_id')).modify(
+			full_name=discussion_info.get('user_full_name'),
+			user_picture_url=discussion_info.get('user_picture_url'),
+			upsert=True,
+			new=True)
 
 		return self
 
@@ -103,6 +103,7 @@ class MoodleCourse(db.Document):
 	enrolled_user_count = db.IntField(default=0)
 	visible = db.BooleanField(default=False)
 	format = db.StringField(default='')
+	grade_max = db.IntField(default=0)
 	show_grades = db.BooleanField(default=False)
 	start_date = db.IntField(default=0)
 	cover = db.StringField(default='')
@@ -128,13 +129,28 @@ class MoodleCourse(db.Document):
 		return self
 
 
+class MoodleUser(db.Document):
+	moodle_id = db.IntField()
+	full_name = db.StringField(default='')
+	user_picture_url = db.StringField(default='')
+	course_grade_dict= db.DictField(default={})
+
+	def get_info(self):
+		return self.to_json()
+
+	def update_course_grade(self, user_course_grade):
+		self.course_grade_dict.update(user_course_grade)
+
+		return self
+
+
 class MoodleTeacher(BaseTeacher):
 	moodle_url = db.StringField(default='')
 	moodle_id = db.IntField()
 	token = db.StringField(default='')
 	username = db.StringField(default='')
 	full_name = db.StringField(default='')
-	avatar_url = db.StringField(default='')
+	user_picture_url = db.StringField(default='')
 	course_list = db.ListField(db.ReferenceField(MoodleCourse), default=[])
 
 	def get_info(self):

@@ -85,6 +85,17 @@ class MoodleApi:
 
 		return requests.get(url, params=param_dict).json()
 
+	def __get_user_course_gradereport(self, course_id, user_id):
+		url = self.__moodle_url + WEBSERVICE_ENDPOINT
+		param_dict = {
+			PARAM_COURSE_ID: course_id,
+			PARAM_USER_ID: user_id,
+			PARAM_TOKEN: self.__token,
+			PARAM_FUNCTION: 'gradereport_user_get_grade_items',
+			PARAM_FORMAT: 'json'}
+
+		return requests.get(url, params=param_dict).json()
+
 	# **************************************************************************
 	# Public functions
 	# **************************************************************************
@@ -133,7 +144,7 @@ class MoodleApi:
 				'subject': discussion.get('subject'),
 				'message': discussion.get('message'),
 				'created': discussion.get('created'),
-				'user_id': discussion.get('user_id'),
+				'user_id': discussion.get('userid'),
 				'user_full_name': discussion.get('userfullname'),
 				'user_picture_url': discussion.get('userpictureurl'),
 				'time_modified': discussion.get('timemodified'),
@@ -142,3 +153,20 @@ class MoodleApi:
 			for discussion in discussion_list]
 
 		return discussion_list
+
+	def get_user_course_grade(self, course_id, user_id):
+		user_course_grades = self.__get_user_course_gradereport(course_id, user_id)
+		if user_course_grades.get('exception'):
+			return {'exception': user_course_grades.get('message')}
+
+		for grade_item in user_course_grades.get('usergrades')[0].get('gradeitems'):
+			if grade_item.get('itemtype') == 'course':
+				user_course_grade = {
+					'course_grade': grade_item.get('grademax'),
+					'user_grade': {
+						str(course_id): grade_item.get('graderaw') if grade_item.get('graderaw') != None else 0
+					}
+				}
+				break
+
+		return user_course_grade
