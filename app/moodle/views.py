@@ -35,20 +35,12 @@ def authorization():
 		return redirect(url_for('main.index'))
 	moodle_url = moodle_auth.get_moodle_url()
 	user_profile = MoodleApi(moodle_url, token).get_current_user_profile()
-	# MoodleTeacher.objects(moodle_id=user_profile.get('userid')).update_one(
-	# 	moodle_url=moodle_url,
-	# 	token=token,
-	# 	username=user_profile.get('username'),
-	# 	full_name=user_profile.get('fullname'),
-	# 	avatar_url=user_profile.get('userpictureurl'),
-	# 	upsert=True)
-	# teacher = MoodleTeacher.objects(moodle_id=user_profile.get('userid')).first()
 	teacher = MoodleTeacher.objects(moodle_id=user_profile.get('userid')).modify(
 		moodle_url=moodle_url,
 		token=token,
 		username=user_profile.get('username'),
 		full_name=user_profile.get('fullname'),
-		avatar_url=user_profile.get('userpictureurl'),
+		user_picture_url=user_profile.get('userpictureurl'),
 		upsert=True,
 		new=True)
 	login_user(teacher)
@@ -85,7 +77,7 @@ def update_courses():
 		course = MoodleCourse.objects(moodle_id=course_info.get('moodle_id')).first()
 		if not course:
 			course = MoodleCourse(moodle_id=course_info.get('moodle_id')).save()
-			current_user.course_list.append(course)
+		current_user.course_list.append(course)
 		# update course forums
 		forum_list = moodle_api.get_course_forums(course.moodle_id)
 		for forum_info in forum_list:
@@ -107,9 +99,17 @@ def update_courses():
 @login_required
 @moodle_login_required
 def show_all_discussions(page=1):
+	moodle_api = MoodleApi(current_user.moodle_url, current_user.token)
 	discussion_list = current_user.filter_and_sort_discussions().paginate(
 		page=page,
 		per_page=DISCUSSIONS_PER_PAGE)
+	for discussion in discussion_list.items:
+		user_course_grade = moodle_api.get_user_course_grade(discussion.course.moodle_id, discussion.user.moodle_id)
+		if user_course_grade.get('exception'):
+			print(user_course_grade.get('exception'))
+		else:
+			discussion.user.update_course_grade(user_course_grade.get('user_grade')).save()
+			discussion.course.modify(grade_max=user_course_grade.get('course_grade')) # Плохое обновлять max балл по курсу с каждым обсуждением, нужно переделать!!!
 
 	return render_template("moodle/discussions.html", discussion_list=discussion_list)
 

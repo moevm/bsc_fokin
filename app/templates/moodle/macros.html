@@ -25,12 +25,18 @@
 					<div class="card-body">
 						<ul class="list-group list-group-flush">
 							<li class="list-group-item">
-								<img src="{{ discussion.user_picture_url }}" class="card-img-top">
+								<img src="{{ discussion.user.user_picture_url }}" class="card-img-top">
 							</li>
-							<li class="list-group-item"> {{ discussion.user_full_name }} </li>
+							<li class="list-group-item"> {{ discussion.user.full_name }} </li>
 							<li class="list-group-item"> Прогресс курса:
 								<div class="progress">
-									<div class="progress-bar" role="progressbar" style="width: 50%" aria-valuenow="50" aria-valuemin="0" aria-valuemax="{{ 100 }}"> 50 % </div>
+									<div class="progress-bar" role="progressbar"
+										style="width: {{ "%.2f" % (discussion.user.course_grade_dict[discussion.course.moodle_id | string] / discussion.course.grade_max * 100) }}%"
+										aria-valuenow="{{ "%.2f" % (discussion.user.course_grade_dict[discussion.course.moodle_id | string] / discussion.course.grade_max * 100) }}"
+										aria-valuemin="0"
+										aria-valuemax="{{ discussion.course.grade_max }}">
+										{{ "%.2f" % (discussion.user.course_grade_dict[discussion.course.moodle_id | string] / discussion.course.grade_max * 100) }} %
+									</div>
 								</div>
 							</li>
 							<li class="list-group-item">
