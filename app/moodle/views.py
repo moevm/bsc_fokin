@@ -99,7 +99,6 @@ def update_courses():
 @login_required
 @moodle_login_required
 def show_all_discussions(page=1):
-	print(current_user.is_authenticated)
 	moodle_api = MoodleApi(current_user.moodle_url, current_user.token)
 	discussion_list = current_user.filter_and_sort_discussions().paginate(
 		page=page,
@@ -110,7 +109,7 @@ def show_all_discussions(page=1):
 			print(user_course_grade.get('exception'))
 		else:
 			discussion.user.update_course_grade(user_course_grade.get('user_grade')).save()
-			discussion.course.modify(grade_max=user_course_grade.get('course_grade')) # Плохое обновлять max балл по курсу с каждым обсуждением, нужно переделать!!!
+			discussion.course.modify(grade_max=user_course_grade.get('course_grade')) # Плохо обновлять max балл по курсу с каждым обсуждением, нужно переделать!!!
 
 	return render_template("moodle/discussions.html", discussion_list=discussion_list)
 

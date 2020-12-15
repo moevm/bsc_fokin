@@ -1,4 +1,4 @@
-{% macro render_discussion_filtration_block(current_user) %}
+{% macro render_discussion_filtration_block(current_user, page) %}
 
 <div class="card-group text-center">
 
@@ -11,11 +11,11 @@
 			<h5 class="card-title"> Диапазон дат: </h5>
 			<label for="">
 				<span> От </span>
-				<input type="date" name="" value="">
+				<input id="date_1" type="date" name="" value="">
 			</label>
 			<label for="">
 				<span> до </span>
-				<input type="date" name="" value="">
+				<input id="date_2" type="date" name="" value="">
 			</label>
 			<br>
 			<br>
@@ -26,9 +26,9 @@
 			</div>
 		</div>
 		<div class="card-footer">
-			<select class="" name="">
-				<option value=""> По убыванию </option>
-				<option value=""> По убыванию </option>
+			<select id="date_order" class="" name="">
+				<option value="-" selected> По убыванию </option>
+				<option value=""> По возрастанию </option>
 			</select>
 		</div>
 	</div>
@@ -44,9 +44,9 @@
 			<div id="replies_slider-range"> </div>
 		</div>
 		<div class="card-footer">
-			<select class="" name="">
-				<option value=""> По убыванию </option>
-				<option value=""> По убыванию </option>
+			<select id="replies_order" class="" name="">
+				<option value="-" selected> По убыванию </option>
+				<option value=""> По возрастанию </option>
 			</select>
 		</div>
 	</div>
@@ -62,9 +62,9 @@
 			<div id="progress_slider-range"> </div>
 		</div>
 		<div class="card-footer">
-			<select class="" name="">
-				<option value=""> По убыванию </option>
-				<option value=""> По убыванию </option>
+			<select id="progress_order" class="" name="">
+				<option value="-" selected> По убыванию </option>
+				<option value=""> По возрастанию </option>
 			</select>
 		</div>
 	</div>
@@ -74,13 +74,13 @@
 		<div class="card-header">
 			Курсы
 		</div>
-		<div class="card-body bg-light">
-			<select class="" name="" multiple="multiple" size="5">
-					<option value=""> Курс №1 </option>
-					<option value=""> Курс №2 </option>
-					<option value=""> Курс №3 </option>
-					<option value=""> Курс №4 </option>
-					<option value=""> Курс №5 </option>
+		<div class="card-body bg-light" style=" display: flex; justify-content: center; align-items: center">
+			<select id="course_id_list" class="" name="" multiple="multiple" size="5">
+					<option value="1"> Курс №1 </option>
+					<option value="2"> Курс №2 </option>
+					<option value="3"> Курс №3 </option>
+					<option value="4"> Курс №4 </option>
+					<option value="5"> Курс №5 </option>
 			</select>
 		</div>
 	</div>
@@ -111,12 +111,12 @@
 		<div class="card-header">
 			Теги
 		</div>
-		<div class="card-body bg-light">
-			<select class="" name="" multiple="multiple" size="5">
-					<option value=""> Тег №1 </option>
-					<option value=""> Тег №2 </option>
-					<option value=""> Тег №3 </option>
-					<option value=""> Тег №4 </option>
+		<div class="card-body bg-light" style=" display: flex; justify-content: center; align-items: center">
+			<select id="tag_id_list" class="" name="" multiple="multiple" size="5">
+					<option value="1"> Тег №1 </option>
+					<option value="2"> Тег №2 </option>
+					<option value="3"> Тег №3 </option>
+					<option value="4"> Тег №4 </option>
 			</select>
 		</div>
 	</div>
@@ -126,7 +126,7 @@
 		<div class="card-body bg-light" style="display: flex; flex-direction: column; justify-content: space-evenly">
 			<a href="#" class="btn btn-warning"> Импорт </a>
 			<a href="#" class="btn btn-primary"> Сохранить </a>
-			<a href="#" class="btn btn-success"> Поиск </a>
+			<a id="search_button" class="btn btn-success" page={{ page }}> Поиск </a>
 		</div>
 	</div>
 
