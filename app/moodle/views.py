@@ -99,6 +99,7 @@ def update_courses():
 @login_required
 @moodle_login_required
 def show_all_discussions(page=1):
+	print(current_user.is_authenticated)
 	moodle_api = MoodleApi(current_user.moodle_url, current_user.token)
 	discussion_list = current_user.filter_and_sort_discussions().paginate(
 		page=page,

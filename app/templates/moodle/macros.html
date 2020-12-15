@@ -17,11 +17,11 @@
 <!-- ********** DISCUSSIONS ********** -->
 {% macro render_discussion_list(discussion_list) %}
 <div class="row">
-	<div class="col-8">
+	<div class="col-sm-8">
 		{% for discussion in discussion_list.items %}
 		<div class="card border-secondary mb-3">
 			<div class="row no-gutters">
-				<div class="col-3">
+				<div class="col-sm-3">
 					<div class="card-body">
 						<ul class="list-group list-group-flush">
 							<li class="list-group-item">
@@ -46,7 +46,7 @@
 						</ul>
 					</div>
 				</div>
-				<div class="col-9">
+				<div class="col-sm-9">
 					<div class="card-header">
 						Курс: {{ discussion.course.full_name }}
 					</div>

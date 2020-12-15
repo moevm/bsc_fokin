@@ -1,5 +1,6 @@
 {% extends "moodle/base.html" %}
 {% import "moodle/macros.html" as macros %}
+{% import "moodle/filtration.html" as filtration %}
 
 {% block title %} - обсуждения {% endblock %}
 
@@ -12,15 +13,17 @@
 {% block content %}
 
 <h1 style="text-align: center;"> Обсуждения </h1>
-<div class="jumbotron rounded bg-light">
-	Здесь будет блок фильтрации и сортировки
-</div>
+
+{{ filtration.render_discussion_filtration_block(current_user) }}
+
+<br>
+
 <div class="comment-list">
 	<div class="row">
-		<div class="col-8">
+		<div class="col-sm-8">
 			<h2 style="text-align: center;"> Список обсуждений </h2>
 		</div>
-		<div class="col-4" style="text-align: center;">
+		<div class="col-sm-4" style="text-align: center;">
 			<a class="btn btn-warning" href="{{ url_for('moodle.update_discussions') }}"> Обновить </a>
 		</div>
 	</div>
@@ -29,5 +32,11 @@
 <div class="jumbotron rounded bg-light">
 	{{ macros.render_navigation(discussion_list, 'moodle.show_all_discussions') }}
 </div>
+
+{% endblock %}
+
+{% block extra_javascript %}
+
+<script src="{{ url_for('static', filename = 'js/filtration.js') }}">	</script>
 
 {% endblock %}

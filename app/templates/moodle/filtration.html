@@ -1,0 +1,135 @@
+{% macro render_discussion_filtration_block(current_user) %}
+
+<div class="card-group text-center">
+
+	<!-- Блок даты -->
+	<div class="card">
+		<div class="card-header">
+			Дата
+		</div>
+		<div class="card-body bg-light">
+			<h5 class="card-title"> Диапазон дат: </h5>
+			<label for="">
+				<span> От </span>
+				<input type="date" name="" value="">
+			</label>
+			<label for="">
+				<span> до </span>
+				<input type="date" name="" value="">
+			</label>
+			<br>
+			<br>
+			<div style=" display: flex; justify-content: space-evenly">
+				<a href="#" class="badge badge-primary"> 1 </a>
+				<a href="#" class="badge badge-primary"> 7 </a>
+				<a href="#" class="badge badge-primary"> 30 </a>
+			</div>
+		</div>
+		<div class="card-footer">
+			<select class="" name="">
+				<option value=""> По убыванию </option>
+				<option value=""> По убыванию </option>
+			</select>
+		</div>
+	</div>
+
+	<!-- Блок ответов -->
+	<div class="card">
+		<div class="card-header">
+			Ответы
+		</div>
+		<div class="card-body bg-light">
+			<h5 class="card-title"> Количество ответов: </h5>
+			<p id="replies_amount" style="font-weight: bold">	</p>
+			<div id="replies_slider-range"> </div>
+		</div>
+		<div class="card-footer">
+			<select class="" name="">
+				<option value=""> По убыванию </option>
+				<option value=""> По убыванию </option>
+			</select>
+		</div>
+	</div>
+
+	<!-- Блок прогресса -->
+	<div class="card">
+		<div class="card-header">
+			Ответы
+		</div>
+		<div class="card-body bg-light">
+			<h5 class="card-title"> Прогресс курса: </h5>
+			<p id="progress_amount" style="font-weight: bold"> </p>
+			<div id="progress_slider-range"> </div>
+		</div>
+		<div class="card-footer">
+			<select class="" name="">
+				<option value=""> По убыванию </option>
+				<option value=""> По убыванию </option>
+			</select>
+		</div>
+	</div>
+
+	<!-- Блок курсов -->
+	<div class="card">
+		<div class="card-header">
+			Курсы
+		</div>
+		<div class="card-body bg-light">
+			<select class="" name="" multiple="multiple" size="5">
+					<option value=""> Курс №1 </option>
+					<option value=""> Курс №2 </option>
+					<option value=""> Курс №3 </option>
+					<option value=""> Курс №4 </option>
+					<option value=""> Курс №5 </option>
+			</select>
+		</div>
+	</div>
+
+	<!-- Блок форумов -->
+	<!-- <div class="card">
+		<div class="card-header">
+			Форумы
+		</div>
+		<div class="card-body">
+			<select class="" name="" multiple="multiple">
+			<option value=""> Форум №1 </option>
+			<option value=""> Форум №2 </option>
+			<option value=""> Форум №3 </option>
+			<option value=""> Форум №4 </option>
+			<option value=""> Форум №5 </option>
+			<option value=""> Форум №6 </option>
+			<option value=""> Форум №7 </option>
+			<option value=""> Форум №8 </option>
+			<option value=""> Форум №9 </option>
+			<option value=""> Форум №10 </option>
+			</select>
+		</div>
+	</div> -->
+
+	<!-- Блок тегов -->
+	<div class="card">
+		<div class="card-header">
+			Теги
+		</div>
+		<div class="card-body bg-light">
+			<select class="" name="" multiple="multiple" size="5">
+					<option value=""> Тег №1 </option>
+					<option value=""> Тег №2 </option>
+					<option value=""> Тег №3 </option>
+					<option value=""> Тег №4 </option>
+			</select>
+		</div>
+	</div>
+
+	<!-- Блок с кнопками -->
+	<div class="card">
+		<div class="card-body bg-light" style="display: flex; flex-direction: column; justify-content: space-evenly">
+			<a href="#" class="btn btn-warning"> Импорт </a>
+			<a href="#" class="btn btn-primary"> Сохранить </a>
+			<a href="#" class="btn btn-success"> Поиск </a>
+		</div>
+	</div>
+
+</div>
+
+{% endmacro %}
