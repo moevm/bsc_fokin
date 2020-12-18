@@ -4,9 +4,13 @@ from functools import wraps
 from app.main import main
 from app.moodle import moodle
 from app.moodle.moodle_api import MoodleAuth, MoodleApi
-from app.moodle.models import MoodleTeacher, MoodleCourse, MoodleForum, MoodleDiscussion
+from app.moodle.models import MoodleTeacher, MoodleCourse, MoodleForum, MoodleDiscussion, MoodlePost, MoodleTag, FiltrationSet
 
 DISCUSSIONS_PER_PAGE = 5
+
+ORDER_PARAMS = [
+	{'value': '', 'label': 'По возрастанию'},
+	{'value': '-', 'label': 'По убыванию'}]
 
 
 def moodle_login_required(f):
@@ -34,15 +38,14 @@ def authorization():
 	if not token:
 		return redirect(url_for('main.index'))
 	moodle_url = moodle_auth.get_moodle_url()
-	user_profile = MoodleApi(moodle_url, token).get_current_user_profile()
-	teacher = MoodleTeacher.objects(moodle_id=user_profile.get('userid')).modify(
+	teacher_info = MoodleApi(moodle_url, token).get_current_user_profile()
+	teacher = MoodleTeacher.objects(moodle_id=teacher_info.get('userid')).modify(
+		moodle_id=teacher_info.get('userid'),
 		moodle_url=moodle_url,
 		token=token,
-		username=user_profile.get('username'),
-		full_name=user_profile.get('fullname'),
-		user_picture_url=user_profile.get('userpictureurl'),
 		upsert=True,
 		new=True)
+	teacher.update_teacher(teacher_info).save()
 	login_user(teacher)
 
 	return redirect(url_for('.show_all_courses'))
@@ -74,18 +77,21 @@ def update_courses():
 	moodle_api = MoodleApi(current_user.moodle_url, current_user.token)
 	course_list = moodle_api.get_user_courses(current_user.moodle_id)
 	for course_info in course_list:
-		course = MoodleCourse.objects(moodle_id=course_info.get('moodle_id')).first()
-		if not course:
-			course = MoodleCourse(moodle_id=course_info.get('moodle_id')).save()
+		course = MoodleCourse.objects(moodle_id=course_info.get('moodle_id')).modify(
+			moodle_id=course_info.get('moodle_id'),
+			upsert=True,
+			new=True)
 		current_user.course_list.append(course)
 		# update course forums
 		forum_list = moodle_api.get_course_forums(course.moodle_id)
 		for forum_info in forum_list:
-			forum = MoodleForum.objects(moodle_id=forum_info.get('moodle_id')).first()
-			if not forum:
-				forum = MoodleForum(moodle_id=forum_info.get('moodle_id'), course=course)
-				course.forum_list.append(forum)
+			forum = MoodleForum.objects(moodle_id=forum_info.get('moodle_id')).modify(
+				moodle_id=forum_info.get('moodle_id'),
+				course=course,
+				upsert=True,
+				new=True)
 			forum.update_forum(forum_info).save()
+			course.forum_list.append(forum)
 		course.update_course(course_info).save()
 	# save updated user in db
 	current_user.save()
@@ -99,6 +105,7 @@ def update_courses():
 @login_required
 @moodle_login_required
 def show_all_discussions(page=1):
+	current_user.filtration_set.update_filtration_set(request.args).save()
 	moodle_api = MoodleApi(current_user.moodle_url, current_user.token)
 	discussion_list = current_user.filter_and_sort_discussions().paginate(
 		page=page,
@@ -111,7 +118,9 @@ def show_all_discussions(page=1):
 			discussion.user.update_course_grade(user_course_grade.get('user_grade')).save()
 			discussion.course.modify(grade_max=user_course_grade.get('course_grade')) # Плохо обновлять max балл по курсу с каждым обсуждением, нужно переделать!!!
 
-	return render_template("moodle/discussions.html", discussion_list=discussion_list)
+	tag_list = MoodleTag.objects()
+
+	return render_template("moodle/discussions.html", discussion_list=discussion_list, tag_list=tag_list, order_select_list=ORDER_PARAMS)
 
 
 @moodle.route('/discussions/update/', methods=['GET'])
@@ -124,15 +133,27 @@ def update_discussions():
 		for forum in course.forum_list:
 			discussion_list = moodle_api.get_forum_discussions(forum.moodle_id)
 			for discussion_info in discussion_list:
-				discussion = MoodleDiscussion.objects(moodle_id=discussion_info.get('moodle_id')).first()
-				if not discussion:
-					discussion = MoodleDiscussion(
-						moodle_id=discussion_info.get('moodle_id'),
-						discussion_id=discussion_info.get('discussion_id'),
+				discussion = MoodleDiscussion.objects(moodle_id=discussion_info.get('moodle_id')).modify(
+					moodle_id=discussion_info.get('moodle_id'),
+					discussion_id=discussion_info.get('discussion_id'),
+					course=course,
+					forum=forum,
+					upsert=True,
+					new=True)
+				# update discussion posts
+				post_list = moodle_api.get_discussion_posts(discussion.discussion_id)
+				for post_info in post_list:
+					post = MoodlePost.objects(moodle_id=post_info.get('moodle_id')).modify(
+						moodle_id=post_info.get('moodle_id'),
 						course=course,
-						forum=forum)
-					forum.discussion_list.append(discussion)
+						forum=forum,
+						discussion=discussion,
+						upsert=True,
+						new=True)
+					post.update_post(post_info).save()
+					discussion.post_list.append(post)
 				discussion.update_discussion(discussion_info).save()
+				forum.discussion_list.append(discussion)
 			forum.save()
 
 	return redirect(url_for('.show_all_discussions'))
