@@ -36,7 +36,7 @@ $(function() {
 // нажатие на кнопку "Поиск"
 $('#search_button').click(function(event) {
 	event.preventDefault();
-	var url = '/moodle/discussions/' + $('#search_button').attr('page') + '/?' +
+	var url = '/moodle/discussions/search/' + $('#search_button').attr('page') + '/?' +
 		'date[from]=' + $('#date_from').val() + '&' +
 		'date[to]=' +  $('#date_to').val() + '&' +
 		'date[order]=' + $('#date_order').val() + '&' +
@@ -50,3 +50,21 @@ $('#search_button').click(function(event) {
 		'tag_ids[]=' + $('#tag_id_list').val().join('&tag_ids[]=')
 	location.href = url;
 	});
+
+// нажатие на кнопки 1, 7 и 30 дней
+$('.day_filtration').click(function(event) {
+	event.preventDefault();
+	$.ajax({
+		type: 'POST',
+		url: '/get_date_interval/',
+		data: JSON.stringify({
+			day_count: event.target.getAttribute('day_count')
+		}),
+		contentType: "application/json",
+		dataType: "json",
+		success: function(data) {
+			$('#date_from').val(data.date_from);
+			$('#date_to').val(data.date_to);
+		}
+	});
+});

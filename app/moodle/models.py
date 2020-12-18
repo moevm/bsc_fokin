@@ -1,3 +1,4 @@
+from datetime import date, datetime
 from app.create_app import db
 from app.main.models import BaseTeacher
 
@@ -5,8 +6,8 @@ from app.main.models import BaseTeacher
 class FiltrationSet(db.Document):
 	serial_id = db.SequenceField()
 	title = db.StringField(default='', unique=True)
-	date_from = db.StringField(default='')
-	date_to = db.StringField(default='')
+	date_from = db.IntField(default=0)
+	date_to = db.IntField(default=0)
 	date_order = db.StringField(default='-')
 	replies_from = db.IntField(default=0)
 	replies_to = db.IntField(default=10)
@@ -21,8 +22,8 @@ class FiltrationSet(db.Document):
 		return self.to_json()
 
 	def update_filtration_set(self, filtration_set_info):
-		self.date_from = filtration_set_info.get('date[from]')
-		self.date_to = filtration_set_info.get('date[to]')
+		self.date_from = datetime.fromisoformat(filtration_set_info.get('date[from]')).timestamp()
+		self.date_to = datetime.fromisoformat(filtration_set_info.get('date[to]')).timestamp()
 		self.date_order = filtration_set_info.get('date[order]')
 		self.replies_from = filtration_set_info.get('replies[from]')
 		self.replies_to = filtration_set_info.get('replies[to]')
@@ -30,10 +31,40 @@ class FiltrationSet(db.Document):
 		self.progress_from = filtration_set_info.get('progress[from]')
 		self.progress_to = filtration_set_info.get('progress[to]')
 		self.progress_order = filtration_set_info.get('progress[order]')
-		self.course_id_list = list(map(int, filtration_set_info.getlist('course_ids[]')))
-		self.tag_id_list = list(map(int, filtration_set_info.getlist('tag_ids[]')))
+		self.course_id_list = list(map(int, filtration_set_info.getlist('course_ids[]'))) if filtration_set_info.getlist('course_ids[]') else []
+		self.tag_id_list = list(map(int, filtration_set_info.getlist('tag_ids[]'))) if filtration_set_info.getlist('tag_ids[]') else []
 
 		return self
+
+	def get_date_args_url(self):
+		date_args_url = 'date[from]={}&date[to]={}&date[order]={}'.format(
+			date.fromtimestamp(self.date_from).isoformat(),
+			date.fromtimestamp(self.date_to).isoformat(),
+			self.date_order)
+
+		return date_args_url
+
+	def get_replies_args_url(self):
+		replies_args_url = 'replies[from]={}&replies[to]={}&replies[order]={}'.format(
+			self.replies_from,
+			self.replies_to,
+			self.replies_order)
+
+		return replies_args_url
+
+	def get_progress_args_url(self):
+		progress_args_url = 'progress[from]={}&progress[to]={}&progress[order]={}'.format(
+			self.progress_from,
+			self.progress_to,
+			self.progress_order)
+
+		return progress_args_url
+
+	def get_courses_args_url(self):
+		return '&'.join('course_ids[]={}'.format(course_id) for course_id in self.course_id_list)
+
+	def get_tags_args_url(self):
+		return '&'.join('tag_ids[]={}'.format(tag_id) for tag_id in self.tag_id_list)
 
 
 class MoodleTag(db.Document):
@@ -233,6 +264,16 @@ class MoodleTeacher(BaseTeacher):
 				new=True)
 
 		return self
+
+	def get_filtration_set_url(self):
+		url = '?{}&{}&{}&{}&{}'.format(
+			self.filtration_set.get_date_args_url(),
+			self.filtration_set.get_replies_args_url(),
+			self.filtration_set.get_progress_args_url(),
+			self.filtration_set.get_courses_args_url(),
+			self.filtration_set.get_tags_args_url())
+
+		return url
 
 	def filter_and_sort_discussions(self):
 		# filter

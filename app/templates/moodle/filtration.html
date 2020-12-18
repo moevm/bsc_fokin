@@ -11,18 +11,18 @@
 			<h5 class="card-title"> Диапазон дат: </h5>
 			<label for="">
 				<span> От </span>
-				<input id="date_from" type="date" name="" value={{ current_user.filtration_set.date_from }}>
+				<input id="date_from" type="date" name="" value={{ current_user.filtration_set.date_from | date_from_timestamp('%Y-%m-%d') }}>
 			</label>
 			<label for="">
 				<span> до </span>
-				<input id="date_to" type="date" name="" value={{ current_user.filtration_set.date_to }}>
+				<input id="date_to" type="date" name="" value={{ current_user.filtration_set.date_to | date_from_timestamp('%Y-%m-%d')  }}>
 			</label>
 			<br>
 			<br>
 			<div style=" display: flex; justify-content: space-evenly">
-				<a href="#" class="badge badge-primary"> 1 </a>
-				<a href="#" class="badge badge-primary"> 7 </a>
-				<a href="#" class="badge badge-primary"> 30 </a>
+				<a href="" class="badge badge-primary day_filtration" day_count=1> 1 </a>
+				<a href="" class="badge badge-primary day_filtration" day_count=7> 7 </a>
+				<a href="" class="badge badge-primary day_filtration" day_count=30> 30 </a>
 			</div>
 		</div>
 		<div class="card-footer">
@@ -85,27 +85,6 @@
 			</select>
 		</div>
 	</div>
-
-	<!-- Блок форумов -->
-	<!-- <div class="card">
-		<div class="card-header">
-			Форумы
-		</div>
-		<div class="card-body">
-			<select class="" name="" multiple="multiple">
-			<option value=""> Форум №1 </option>
-			<option value=""> Форум №2 </option>
-			<option value=""> Форум №3 </option>
-			<option value=""> Форум №4 </option>
-			<option value=""> Форум №5 </option>
-			<option value=""> Форум №6 </option>
-			<option value=""> Форум №7 </option>
-			<option value=""> Форум №8 </option>
-			<option value=""> Форум №9 </option>
-			<option value=""> Форум №10 </option>
-			</select>
-		</div>
-	</div> -->
 
 	<!-- Блок тегов -->
 	<div class="card">

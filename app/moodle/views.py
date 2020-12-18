@@ -25,7 +25,7 @@ def moodle_login_required(f):
 @moodle.route('/login/', methods=['GET', 'POST'])
 def login():
 	if current_user.is_authenticated and current_user.is_moodle_teacher():
-		return redirect(url_for('.show_all_discussions'))
+		return redirect(url_for('.show_all_courses'))
 
 	return redirect(url_for('moodle.authorization'), code=308)
 
@@ -106,6 +106,7 @@ def update_courses():
 @moodle_login_required
 def show_all_discussions(page=1):
 	current_user.filtration_set.update_filtration_set(request.args).save()
+	# print(request.args)
 	moodle_api = MoodleApi(current_user.moodle_url, current_user.token)
 	discussion_list = current_user.filter_and_sort_discussions().paginate(
 		page=page,
@@ -157,3 +158,14 @@ def update_discussions():
 			forum.save()
 
 	return redirect(url_for('.show_all_discussions'))
+
+
+@moodle.route('/discussions/search/', methods=['GET'])
+@moodle.route('/discussions/search/<int:page>/', methods=['GET'])
+@login_required
+@moodle_login_required
+def search_discussions(page=1):
+	if request.args:
+		current_user.filtration_set.update_filtration_set(request.args).save()
+
+	return redirect('{}{}'.format(url_for('.show_all_discussions', page=page), current_user.get_filtration_set_url()))
