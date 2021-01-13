@@ -1,5 +1,56 @@
-{% macro render_discussion_filtration_block(current_user, tag_list, order_select_list, page) %}
+{% macro render_filtration_block(current_user, tag_list, order_select_list, page, filtration_set_list, redirect) %}
 
+<!-- Import modal -->
+<div class="modal fade" id="import_modal" tabindex="-1" role="dialog" aria-hidden="true">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title" id="exampleModalLabel"> Импорт сохраненного фильтра </h5>
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+					<span aria-hidden="true">&times;</span>
+				</button>
+			</div>
+			<div class="modal-body">
+				<p> Название фильтра: </p>
+				<select id="filtration_preset" class="" name="">
+					{% for filtration_set in filtration_set_list %}
+						<option value="{{ filtration_set.serial_id }}" > {{ filtration_set.title }} </option>
+					{% endfor %}
+				</select>
+				<p> Параметры: </p>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-secondary" data-dismiss="modal"> Закрыть </button>
+				<button id="import_btn" type="button" class="btn btn-primary" redirect="{{ redirect }}"> Применить </button>
+			</div>
+		</div>
+	</div>
+</div>
+
+<!-- Export modal -->
+<div class="modal fade" id="export_modal" tabindex="-1" role="dialog" aria-hidden="true">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title" id="exampleModalLabel"> Экпорт сохраненного фильтра </h5>
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+					<span aria-hidden="true">&times;</span>
+				</button>
+			</div>
+			<div class="modal-body">
+				<p> Название фильтра: </p>
+				<input id="filtration_set_title" type="text" name="" value="">
+				<p> Параметры: </p>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-secondary" data-dismiss="modal"> Закрыть </button>
+				<button id="export_btn" type="button" class="btn btn-primary" redirect="{{ redirect }}"> Применить </button>
+			</div>
+		</div>
+	</div>
+</div>
+
+<!-- Filtration -->
 <div class="card-group text-center">
 
 	<!-- Блок даты -->
@@ -47,7 +98,7 @@
 		<div class="card-footer">
 			<select id="replies_order" class="" name="">
 				{% for option in order_select_list %}
-					<option value={{ option.value }} {% if current_user.filtration_set.replies_order == option.value %} selected {% endif %}> {{ option.label }} </option>
+					<option value="{{ option.value }}" {% if current_user.filtration_set.replies_order == option.value %} selected {% endif %}> {{ option.label }} </option>
 				{% endfor %}
 			</select>
 		</div>
@@ -66,7 +117,7 @@
 		<div class="card-footer">
 			<select id="progress_order" class="" name="">
 				{% for option in order_select_list %}
-					<option value={{ option.value }} {% if current_user.filtration_set.progress_order == option.value %} selected {% endif %}> {{ option.label }} </option>
+					<option value="{{ option.value }}" {% if current_user.filtration_set.progress_order == option.value %} selected {% endif %}> {{ option.label }} </option>
 				{% endfor %}
 			</select>
 		</div>
@@ -103,9 +154,9 @@
 	<!-- Блок с кнопками -->
 	<div class="card">
 		<div class="card-body bg-light" style="display: flex; flex-direction: column; justify-content: space-evenly">
-			<a href="#" class="btn btn-warning"> Импорт </a>
-			<a href="#" class="btn btn-primary"> Сохранить </a>
-			<a id="search_button" class="btn btn-success" page={{ page }}> Поиск </a>
+			<a href="#" class="btn btn-warning" data-toggle="modal" data-target="#import_modal"> Импорт </a>
+			<a href="#" class="btn btn-primary" data-toggle="modal" data-target="#export_modal"> Сохранить </a>
+			<a href="" id="search_button" class="btn btn-success" page={{ page }}> Поиск </a>
 		</div>
 	</div>
 

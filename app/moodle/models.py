@@ -22,6 +22,7 @@ class FiltrationSet(db.Document):
 		return self.to_json()
 
 	def update_filtration_set(self, filtration_set_info):
+		print(self.serial_id)
 		self.date_from = datetime.fromisoformat(filtration_set_info.get('date[from]')).timestamp()
 		self.date_to = datetime.fromisoformat(filtration_set_info.get('date[to]')).timestamp()
 		self.date_order = filtration_set_info.get('date[order]')
@@ -35,6 +36,16 @@ class FiltrationSet(db.Document):
 		self.tag_id_list = list(map(int, filtration_set_info.getlist('tag_ids[]'))) if filtration_set_info.getlist('tag_ids[]') else []
 
 		return self
+
+	def get_url(self):
+		url = '?{}&{}&{}&{}&{}'.format(
+			self.get_date_args_url(),
+			self.get_replies_args_url(),
+			self.get_progress_args_url(),
+			self.get_courses_args_url(),
+			self.get_tags_args_url())
+
+		return url
 
 	def get_date_args_url(self):
 		date_args_url = 'date[from]={}&date[to]={}&date[order]={}'.format(
@@ -265,19 +276,16 @@ class MoodleTeacher(BaseTeacher):
 
 		return self
 
-	def get_filtration_set_url(self):
-		url = '?{}&{}&{}&{}&{}'.format(
-			self.filtration_set.get_date_args_url(),
-			self.filtration_set.get_replies_args_url(),
-			self.filtration_set.get_progress_args_url(),
-			self.filtration_set.get_courses_args_url(),
-			self.filtration_set.get_tags_args_url())
-
-		return url
-
 	def filter_and_sort_discussions(self):
 		# filter
 		# 1. course
 		discussions_list = MoodleDiscussion.objects(course__in=self.course_list)
 
 		return discussions_list
+
+	def filter_and_sort_posts(self):
+		# filter
+		# 1. course
+		posts_list = MoodlePost.objects(course__in=self.course_list)
+
+		return posts_list

@@ -36,7 +36,7 @@ $(function() {
 // нажатие на кнопку "Поиск"
 $('#search_button').click(function(event) {
 	event.preventDefault();
-	var url = '/moodle/discussions/search/' + $('#search_button').attr('page') + '/?' +
+	var url = '?' +
 		'date[from]=' + $('#date_from').val() + '&' +
 		'date[to]=' +  $('#date_to').val() + '&' +
 		'date[order]=' + $('#date_order').val() + '&' +
@@ -48,8 +48,11 @@ $('#search_button').click(function(event) {
 		'progress[order]=' + $('#progress_order').val() + '&' +
 		'course_ids[]=' + $('#course_id_list').val().join('&course_ids[]=') + '&' +
 		'tag_ids[]=' + $('#tag_id_list').val().join('&tag_ids[]=')
-	location.href = url;
+	$.ajax({
+		type: 'GET',
+		url: url,
 	});
+});
 
 // нажатие на кнопки 1, 7 и 30 дней
 $('.day_filtration').click(function(event) {
@@ -67,4 +70,33 @@ $('.day_filtration').click(function(event) {
 			$('#date_to').val(data.date_to);
 		}
 	});
+});
+
+// импорт фильтра
+$('#import_btn').click(function(event) {
+	event.preventDefault();
+	location.href = '/moodle/filtration_set/import/' + $('#filtration_preset').val() + '/?redirect=' + $('#import_btn').attr('redirect');
+});
+
+// экспорт фильтра
+$('#export_btn').click(function(event) {
+	event.preventDefault();
+	var url = '/moodle/filtration_set/export/?' +
+		'date[from]=' + $('#date_from').val() + '&' +
+		'date[to]=' +  $('#date_to').val() + '&' +
+		'date[order]=' + $('#date_order').val() + '&' +
+		'replies[from]=' + $("#replies_slider-range").slider('values', 0) + '&' +
+		'replies[to]=' + $("#replies_slider-range").slider('values', 1) + '&' +
+		'replies[order]=' + $('#replies_order').val() + '&' +
+		'progress[from]=' + $("#progress_slider-range").slider('values', 0) + '&' +
+		'progress[to]=' + $("#progress_slider-range").slider('values', 1) + '&' +
+		'progress[order]=' + $('#progress_order').val() + '&' +
+		'course_ids[]=' + $('#course_id_list').val().join('&course_ids[]=') + '&' +
+		'tag_ids[]=' + $('#tag_id_list').val().join('&tag_ids[]=') + '&' +
+		'title=' + $('#filtration_set_title').val() + '&' +
+		'redirect=' + $('#export_btn').attr('redirect')
+		$.ajax({
+			type: 'GET',
+			url: url,
+		});
 });

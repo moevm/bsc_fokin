@@ -1,0 +1,40 @@
+{% extends "moodle/base.html" %}
+{% import "moodle/macros.html" as macros %}
+{% import "moodle/filtration.html" as filtration %}
+
+{% block title %} - посты {% endblock %}
+
+{% block extra_css %}
+
+<link rel="stylesheet" href="{{ url_for('static', filename = 'css/comments.css') }}">
+
+{% endblock %}
+
+{% block content %}
+
+<h1 style="text-align: center;"> Посты </h1>
+
+{{ filtration.render_filtration_block(current_user, tag_list, order_select_list, post_list.page, filtration_set_list, redirect) }}
+
+<br>
+
+<div class="comment-list">
+	<div class="row">
+		<div class="col-sm-8">
+			<h2 style="text-align: center;"> Список постов </h2>
+		</div>
+		<div class="col-sm-4"> </div>
+	</div>
+	{{ macros.render_post_list(post_list) }}
+</div>
+<div class="jumbotron rounded bg-light">
+	{{ macros.render_navigation(post_list, 'moodle.search_posts') }}
+</div>
+
+{% endblock %}
+
+{% block extra_javascript %}
+
+<script src="{{ url_for('static', filename = 'js/filtration.js') }}">	</script>
+
+{% endblock %}
