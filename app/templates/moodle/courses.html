@@ -30,9 +30,18 @@
 		</div>
 		{% endfor %}
 	</div>
-	<div class="col-4" style="text-align: center;">
-		<a class="btn btn-lg btn-warning mr-2" href="{{ url_for('moodle.update_courses') }}"> Обновить </a>
+	<div class="col-sm-4" style="text-align: center;">
+		<button class="btn btn-warning update_btn" type="button" href="{{ url_for('moodle.update_courses') }}">
+			<span class="spinner-border spinner-border-sm update_btn_spinner" role="status" aria-hidden="true" style="display: none"> </span>
+			Обновить
+		</button>
 	</div>
 </div>
+
+{% endblock %}
+
+{% block extra_javascript %}
+
+<script src="{{ url_for('static', filename = 'js/filtration.js') }}">	</script>
 
 {% endblock %}

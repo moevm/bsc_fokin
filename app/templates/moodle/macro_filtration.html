@@ -1,0 +1,163 @@
+{% macro render_filtration_block(current_user, tag_list, order_select_list, page, filtration_set_list, redirect) %}
+
+<!-- Import modal -->
+<div class="modal fade" id="import_modal" tabindex="-1" role="dialog" aria-hidden="true">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title" id="exampleModalLabel"> Импорт сохраненного фильтра </h5>
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+					<span aria-hidden="true">&times;</span>
+				</button>
+			</div>
+			<div class="modal-body">
+				<p> Название фильтра: </p>
+				<select id="filtration_preset" class="" name="">
+					{% for filtration_set in filtration_set_list %}
+						<option value="{{ filtration_set.serial_id }}" > {{ filtration_set.title }} </option>
+					{% endfor %}
+				</select>
+			</div>
+			<div class="modal-footer">
+				<a class="btn btn-secondary" data-dismiss="modal"> Закрыть </a>
+				<a id="import_btn" class="btn btn-primary" redirect_url='{{ url_for(redirect) }}'> Применить </a>
+			</div>
+		</div>
+	</div>
+</div>
+
+<!-- Export modal -->
+<div class="modal fade" id="export_modal" tabindex="-1" role="dialog" aria-hidden="true">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title" id="exampleModalLabel"> Экпорт сохраненного фильтра </h5>
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+					<span aria-hidden="true">&times;</span>
+				</button>
+			</div>
+			<div class="modal-body">
+				<p> Название фильтра: </p>
+				<input id="filtration_set_title" type="text" name="" value="">
+			</div>
+			<div class="modal-footer">
+				<a class="btn btn-secondary" data-dismiss="modal"> Закрыть </a>
+				<a id="export_btn" class="btn btn-primary" redirect_url='{{ url_for(redirect, page=page) }}'> Применить </a>
+			</div>
+		</div>
+	</div>
+</div>
+
+<!-- Filtration -->
+<div class="card-group text-center">
+
+	<!-- Блок даты -->
+	<div class="card">
+		<div class="card-header">
+			Дата
+		</div>
+		<div class="card-body bg-light">
+			<h5 class="card-title"> Диапазон дат: </h5>
+			<label for="">
+				<span> От </span>
+				<input id="date_from" type="date" name="" value={{ current_user.filtration_set.date_from | date_from_timestamp('%Y-%m-%d') }}>
+			</label>
+			<label for="">
+				<span> до </span>
+				<input id="date_to" type="date" name="" value={{ current_user.filtration_set.date_to | date_from_timestamp('%Y-%m-%d')  }}>
+			</label>
+			<br>
+			<br>
+			<div style=" display: flex; justify-content: space-evenly">
+				<a href="" class="badge badge-primary day_filtration" day_count=1> 1 </a>
+				<a href="" class="badge badge-primary day_filtration" day_count=7> 7 </a>
+				<a href="" class="badge badge-primary day_filtration" day_count=30> 30 </a>
+			</div>
+		</div>
+		<div class="card-footer">
+			<select id="date_order" class="" name="">
+				{% for option in order_select_list %}
+					<option value="{{ option.value }}" {% if current_user.filtration_set.date_order == option.value %} selected {% endif %}> {{ option.label }} </option>
+				{% endfor %}
+			</select>
+		</div>
+	</div>
+
+	<!-- Блок ответов -->
+	<div class="card">
+		<div class="card-header">
+			Ответы
+		</div>
+		<div class="card-body bg-light">
+			<h5 class="card-title"> Количество ответов: </h5>
+			<p id="replies_range" style="font-weight: bold" replies_from={{ current_user.filtration_set.replies_from }} replies_to={{ current_user.filtration_set.replies_to }}>	</p>
+			<div id="replies_slider-range"> </div>
+		</div>
+		<div class="card-footer">
+			<select id="replies_order" class="" name="">
+				{% for option in order_select_list %}
+					<option value="{{ option.value }}" {% if current_user.filtration_set.replies_order == option.value %} selected {% endif %}> {{ option.label }} </option>
+				{% endfor %}
+			</select>
+		</div>
+	</div>
+
+	<!-- Блок прогресса -->
+	<div class="card">
+		<div class="card-header">
+			Прогресс
+		</div>
+		<div class="card-body bg-light">
+			<h5 class="card-title"> Прогресс курса: </h5>
+			<p id="progress_range" style="font-weight: bold" progress_from={{ current_user.filtration_set.progress_from }} progress_to={{ current_user.filtration_set.progress_to }}> </p>
+			<div id="progress_slider-range"> </div>
+		</div>
+		<div class="card-footer">
+			<select id="progress_order" class="" name="">
+				{% for option in order_select_list %}
+					<option value="{{ option.value }}" {% if current_user.filtration_set.progress_order == option.value %} selected {% endif %}> {{ option.label }} </option>
+				{% endfor %}
+			</select>
+		</div>
+	</div>
+
+	<!-- Блок курсов -->
+	<div class="card">
+		<div class="card-header">
+			Курсы
+		</div>
+		<div class="card-body bg-light" style=" display: flex; justify-content: center; align-items: center">
+			<select id="course_id_list" class="" name="" multiple="multiple" size="5">
+				{% for course in current_user.course_list %}
+					<option value="{{ course.moodle_id }}" {% if course.moodle_id in current_user.filtration_set.course_id_list %} selected {% endif %}> {{ course.full_name }} </option>
+				{% endfor %}
+			</select>
+		</div>
+	</div>
+
+	<!-- Блок тегов -->
+	<div class="card">
+		<div class="card-header">
+			Теги
+		</div>
+		<div class="card-body bg-light" style=" display: flex; justify-content: center; align-items: center">
+			<select id="tag_id_list" class="" name="" multiple="multiple" size="5">
+				{% for tag in tag_list %}
+					<option value="{{ tag.moodle_id }}" {% if tag.moodle_id in current_user.filtration_set.tag_id_list %} selected {% endif %}> {{ tag.display_name }} </option>
+				{% endfor %}
+			</select>
+		</div>
+	</div>
+
+	<!-- Блок с кнопками -->
+	<div class="card">
+		<div class="card-body bg-light" style="display: flex; flex-direction: column; justify-content: space-evenly">
+			<a href="#" class="btn btn-warning" data-toggle="modal" data-target="#import_modal"> Импорт </a>
+			<a href="#" class="btn btn-primary" data-toggle="modal" data-target="#export_modal"> Сохранить </a>
+			<a href="#" id="search_btn" class="btn btn-success" redirect_url='{{ url_for(redirect) }}'> Поиск </a>
+		</div>
+	</div>
+
+</div>
+
+{% endmacro %}

@@ -85,6 +85,16 @@ class MoodleApi:
 
 		return requests.get(url, params=param_dict).json()
 
+	def __get_discussion_posts(self, discussion_id):
+		url = self.__moodle_url + WEBSERVICE_ENDPOINT
+		param_dict = {
+			PARAM_DISCUSSION_ID: discussion_id,
+			PARAM_TOKEN: self.__token,
+			PARAM_FUNCTION: 'mod_forum_get_discussion_posts',
+			PARAM_FORMAT: 'json'}
+
+		return requests.get(url, params=param_dict).json()
+
 	def __get_user_course_gradereport(self, course_id, user_id):
 		url = self.__moodle_url + WEBSERVICE_ENDPOINT
 		param_dict = {
@@ -135,7 +145,8 @@ class MoodleApi:
 		return forum_list
 
 	def get_forum_discussions(self, forum_id):
-		discussion_list = self.__get_forum_discussions(forum_id).get('discussions') if self.__get_forum_discussions(forum_id).get('discussions') else []
+		forum_discussions = self.__get_forum_discussions(forum_id)
+		discussion_list = forum_discussions.get('discussions') if forum_discussions.get('discussions') else []
 		discussion_list = [
 			{
 				'moodle_id': discussion.get('id'),
@@ -153,6 +164,29 @@ class MoodleApi:
 			for discussion in discussion_list]
 
 		return discussion_list
+
+	def get_discussion_posts(self, discussion_id):
+		discussion_posts = self.__get_discussion_posts(discussion_id)
+		post_list = discussion_posts.get('posts') if discussion_posts.get('posts') else []
+		post_list = [
+			{
+				'moodle_id': post.get('id'),
+				'subject': post.get('subject'),
+				'reply_subject': post.get('replysubject'),
+				'message': post.get('message'),
+				'user_id': post.get('author').get('id'),
+				'user_full_name': post.get('author').get('fullname'),
+				'user_url': post.get('author').get('urls').get('profile'),
+				'user_picture_url': post.get('author').get('urls').get('profileimage'),
+				'has_parent': post.get('hasparent'),
+				'parent_id': post.get('parentid'),
+				'time_created': post.get('timecreated'),
+				'view_url': post.get('urls').get('view'),
+				'tags': post.get('tags'),
+				'rating': next((rating for rating in discussion_posts.get('ratinginfo').get('ratings') if rating.get('itemid') == post.get('id')), {})}
+			for post in post_list]
+
+		return post_list
 
 	def get_user_course_grade(self, course_id, user_id):
 		user_course_grades = self.__get_user_course_gradereport(course_id, user_id)

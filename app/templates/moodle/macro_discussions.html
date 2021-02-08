@@ -1,0 +1,60 @@
+{% macro render_discussion_list(discussion_list) %}
+<div class="row">
+	<div class="col-sm-8">
+		{% for discussion in discussion_list.items %}
+
+		<div class="card-group">
+			<!-- Первая половина -->
+			<div class="card text-center border-secondary">
+				<img src="{{ discussion.user.user_picture_url }}" class="card-img-top" alt="...">
+				<div class="card-body">
+					<h5 class="card-title">
+						<a href="" class="badge badge-primary author_filtration" author_id="{{ discussion.user.serial_id }}"> {{ discussion.user.full_name }} </a>
+					</h5>
+				</div>
+				<ul class="list-group list-group-flush">
+					<li class="list-group-item">
+						<b> Прогресс курса: </b>
+						<div class="progress">
+							<div class="progress-bar" role="progressbar"
+								style="width: {{ "%.2f" % (discussion.user.course_grade_dict[discussion.course.moodle_id | string] / discussion.course.grade_max * 100) }}%"
+								aria-valuenow="{{ "%.2f" % (discussion.user.course_grade_dict[discussion.course.moodle_id | string] / discussion.course.grade_max * 100) }}"
+								aria-valuemin="0"
+								aria-valuemax="{{ discussion.course.grade_max }}">
+								{{ "%.2f" % (discussion.user.course_grade_dict[discussion.course.moodle_id | string] / discussion.course.grade_max * 100) }} %
+							</div>
+						</div>
+					</li>
+					<li class="list-group-item"> <b> Средняя оценка: </b> 4 </li>
+					<li class="list-group-item"> <b> Ответы: </b> {{ discussion.num_replies }} </li>
+				</ul>
+				<div class="card-footer">
+					<small class="text-muted"> {{ discussion.created | date_from_timestamp('%d.%m.%Y %H:%M') }} </small>
+				</div>
+			</div>
+			<!-- Вторая половина -->
+			<div class="card border-secondary" style="flex-grow: 3">
+				<ul class="list-group list-group-flush">
+					<li class="list-group-item list-group-item-secondary">
+						<b> Курс: </b>
+						<a href="" class="badge badge-primary course_filtration" course_id="{{ discussion.course.moodle_id }}"> {{ discussion.course.full_name }} </a>
+					</li>
+					<li class="list-group-item list-group-item-secondary"> <b> Форум: </b> {{ discussion.forum.name }} </li>
+					<li class="list-group-item list-group-item-secondary"> <b> Тема: </b> {{ discussion.subject }} </li>
+				</ul>
+				<div class="card-body">
+					<p class="card-text"> {{ discussion.message | safe }} </p>
+				</div>
+				<div class="card-footer text-right">
+					<a href="" class="badge badge-warning more_discussion_info" discussion_id="{{ discussion.serial_id }}"> Подробнее </a>
+					<a href="" class="badge badge-primary discussion_status" discussion_id="{{ discussion.serial_id }}"> Обработано </a>
+				</div>
+			</div>
+		</div>
+
+		<br>
+
+		{% endfor %}
+	</div>
+</div>
+{% endmacro %}

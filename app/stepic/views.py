@@ -36,7 +36,7 @@ def stepic_login_required(f):
 @stepic.route('/login/', methods=['GET', 'POST'])
 def login():
 	if current_user.is_authenticated and current_user.is_stepic_teacher():
-		return redirect(url_for('.show_all_comments'))
+		return redirect(url_for('.show_all_courses'))
 
 	return stepic_oauth.app.authorize(callback=url_for('.authorization', _external=True))
 

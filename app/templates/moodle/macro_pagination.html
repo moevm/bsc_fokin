@@ -1,0 +1,15 @@
+{% macro render_navigation(pagination, endpoint) %}
+<div class="pagination">
+	{% for page in pagination.iter_pages() %}
+		{% if page %}
+			{% if page != pagination.page %}
+				<a class="btn btn-info mr-2" href="{{ url_for(endpoint, page=page) }}"> {{ page }} </a>
+			{% else %}
+				<a class="btn btn-outline-info mr-2" href="{{ url_for(endpoint, page=page) }}"> {{ page }} </a>
+			{% endif %}
+		{% else %}
+			<a class="btn btn-outline-info disabled mr-2" href=""> ... </a>
+		{% endif %}
+	{% endfor %}
+</div>
+{% endmacro %}
