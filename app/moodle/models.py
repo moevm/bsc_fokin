@@ -17,33 +17,73 @@ class FiltrationSet(db.Document):
 	progress_order = db.StringField(default='-')
 	course_id_list = db.ListField(default=[])
 	tag_id_list = db.ListField(default=[])
+	author = db.ReferenceField('MoodleUser')
 
 	def get_info(self):
 		return self.to_json()
 
+	def parse_url_args(self, args):
+		filtration_set_info = {
+			'date_from': args.get('date[from]'),
+			'date_to': args.get('date[to]'),
+			'date_order': args.get('date[order]'),
+			'replies_from': args.get('replies[from]'),
+			'replies_to': args.get('replies[to]'),
+			'replies_order': args.get('replies[order]'),
+			'progress_from': args.get('progress[from]'),
+			'progress_to': args.get('progress[to]'),
+			'progress_order': args.get('progress[order]'),
+			'course_id_list': args.getlist('course_ids[]'),
+			'tag_id_list': args.getlist('tag_ids[]'),
+			'author_id': args.get('author_id'),
+		}
+
+		return filtration_set_info
+
 	def update_filtration_set(self, filtration_set_info):
-		print(self.serial_id)
-		self.date_from = datetime.fromisoformat(filtration_set_info.get('date[from]')).timestamp()
-		self.date_to = datetime.fromisoformat(filtration_set_info.get('date[to]')).timestamp()
-		self.date_order = filtration_set_info.get('date[order]')
-		self.replies_from = filtration_set_info.get('replies[from]')
-		self.replies_to = filtration_set_info.get('replies[to]')
-		self.replies_order = filtration_set_info.get('replies[order]')
-		self.progress_from = filtration_set_info.get('progress[from]')
-		self.progress_to = filtration_set_info.get('progress[to]')
-		self.progress_order = filtration_set_info.get('progress[order]')
-		self.course_id_list = list(map(int, filtration_set_info.getlist('course_ids[]'))) if filtration_set_info.getlist('course_ids[]') else []
-		self.tag_id_list = list(map(int, filtration_set_info.getlist('tag_ids[]'))) if filtration_set_info.getlist('tag_ids[]') else []
+		self.date_from = datetime.fromisoformat(filtration_set_info.get('date_from')).timestamp()
+		self.date_to = datetime.fromisoformat(filtration_set_info.get('date_to')).timestamp()
+		self.date_order = filtration_set_info.get('date_order')
+		self.replies_from = filtration_set_info.get('replies_from')
+		self.replies_to = filtration_set_info.get('replies_to')
+		self.replies_order = filtration_set_info.get('replies_order')
+		self.progress_from = filtration_set_info.get('progress_from')
+		self.progress_to = filtration_set_info.get('progress_to')
+		self.progress_order = filtration_set_info.get('progress_order')
+		self.course_id_list = list(map(int, filtration_set_info.get('course_id_list'))) if filtration_set_info.get('course_id_list') else []
+		self.tag_id_list = list(map(int, filtration_set_info.get('tag_id_list'))) if filtration_set_info.get('tag_id_list') else []
+		self.author = MoodleUser.objects(serial_id=filtration_set_info.get('author_id')).first() if filtration_set_info.get('author_id') else None
+
+		print('Update filtration set #{}'.format(self.serial_id))
+
+		return self
+
+	def copy_filtration_set(self, old_filtration_set):
+		self.date_from = old_filtration_set.date_from
+		self.date_to = old_filtration_set.date_to
+		self.date_order = old_filtration_set.date_order
+		self.replies_from = old_filtration_set.replies_from
+		self.replies_to = old_filtration_set.replies_to
+		self.replies_order = old_filtration_set.replies_order
+		self.progress_from = old_filtration_set.progress_from
+		self.progress_to = old_filtration_set.progress_to
+		self.progress_order = old_filtration_set.progress_order
+		self.course_id_list = old_filtration_set.course_id_list
+		self.tag_id_list = old_filtration_set.tag_id_list
+		self.author = old_filtration_set.author
+
+		print('Copy filtration_set #{} <-- #{}'.format(self.serial_id, old_filtration_set.serial_id))
 
 		return self
 
 	def get_url(self):
-		url = '?{}&{}&{}&{}&{}'.format(
+		url = '?{}&{}&{}&{}&{}&{}'.format(
 			self.get_date_args_url(),
 			self.get_replies_args_url(),
 			self.get_progress_args_url(),
 			self.get_courses_args_url(),
-			self.get_tags_args_url())
+			self.get_tags_args_url(),
+			self.get_author_args_url())
 
 		return url
 
@@ -77,6 +117,9 @@ class FiltrationSet(db.Document):
 	def get_tags_args_url(self):
 		return '&'.join('tag_ids[]={}'.format(tag_id) for tag_id in self.tag_id_list)
 
+	def get_author_args_url(self):
+		return 'author_id={}'.format(self.author.serial_id if self.author else 0)
+
 
 class MoodleTag(db.Document):
 	serial_id = db.SequenceField()
@@ -102,6 +145,7 @@ class MoodlePost(db.Document):
 	has_parent = db.BooleanField(default=False)
 	parent_id = db.IntField(default=0) # ? ReferenceField
 	time_created = db.IntField(default=0)
+	view_url = db.StringField(default='')
 	rating = db.IntField(default=0)
 	rating_count = db.IntField(default=0)
 	rating_label = db.StringField(default='')
@@ -124,6 +168,9 @@ class MoodlePost(db.Document):
 		self.has_parent = post_info.get('has_parent')
 		self.parent_id = post_info.get('parent_id')
 		self.time_created = post_info.get('time_created')
+		self.view_url = post_info.get('view_url')
+		if not self.has_parent:
+			self.discussion.modify(view_url=self.view_url)
 		if post_info.get('rating'):
 			self.rating = post_info.get('rating').get('rating')
 			self.rating_count = post_info.get('rating').get('count')
@@ -137,6 +184,8 @@ class MoodlePost(db.Document):
 				upsert=True,
 				new=True)
 			for tag_info in post_info.get('tags')]
+
+		print('Update moodle post #{}'.format(self.serial_id))
 
 		return self
 
@@ -155,6 +204,7 @@ class MoodleDiscussion(db.Document):
 	time_modified = db.IntField(default=0)
 	user_modified = db.IntField(default=0) # ? ReferenceField
 	num_replies = db.IntField(default=0)
+	view_url = db.StringField(default='')
 	post_list = db.ListField(db.ReferenceField(MoodlePost), default=[])
 
 	def get_info(self):
@@ -173,6 +223,8 @@ class MoodleDiscussion(db.Document):
 		self.time_modified = discussion_info.get('time_modified')
 		self.user_modified = discussion_info.get('user_modified')
 		self.num_replies = discussion_info.get('num_replies')
+
+		print('Update moodle discussion #{}'.format(self.serial_id))
 
 		return self
 
@@ -195,6 +247,8 @@ class MoodleForum(db.Document):
 		self.name = forum_info.get('name')
 		self.intro = forum_info.get('intro')
 		self.scale = forum_info.get('scale')
+
+		print('Update moodle forum #{}'.format(self.serial_id))
 
 		return self
 
@@ -219,7 +273,7 @@ class MoodleCourse(db.Document):
 	def get_info(self):
 		return self.to_json()
 
-	def update_course(self, course_info):
+	def update_course(self, course_info, course_forum_list):
 		self.short_name = course_info.get('short_name')
 		self.full_name = course_info.get('full_name')
 		self.display_name = course_info.get('display_name')
@@ -230,12 +284,16 @@ class MoodleCourse(db.Document):
 		self.show_grades = course_info.get('show_grades')
 		self.start_date = course_info.get('start_date')
 		self.cover = course_info.get('cover')
+		self.forum_list = course_forum_list
 		self.forum_count = len(self.forum_list)
+
+		print('Update moodle course #{}: {}'.format(self.serial_id, self.short_name))
 
 		return self
 
 
 class MoodleUser(db.Document):
+	serial_id = db.SequenceField()
 	moodle_id = db.IntField()
 	full_name = db.StringField(default='')
 	user_url = db.StringField(default='')
@@ -247,6 +305,8 @@ class MoodleUser(db.Document):
 
 	def update_course_grade(self, user_course_grade):
 		self.course_grade_dict.update(user_course_grade)
+
+		print('Update moodle user course grade #{}'.format(self.serial_id))
 
 		return self
 
@@ -273,6 +333,15 @@ class MoodleTeacher(BaseTeacher):
 				title=filtration_set_title,
 				upsert=True,
 				new=True)
+
+		print('Update moodle teacher #{}: {}'.format(self.serial_id, self.full_name))
+
+		return self
+
+	def update_user_courses(self, user_course_list):
+		self.course_list = user_course_list
+
+		print('Update moodle teacher courses #{}'.format(self.serial_id))
 
 		return self
 

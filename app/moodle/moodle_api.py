@@ -181,6 +181,7 @@ class MoodleApi:
 				'has_parent': post.get('hasparent'),
 				'parent_id': post.get('parentid'),
 				'time_created': post.get('timecreated'),
+				'view_url': post.get('urls').get('view'),
 				'tags': post.get('tags'),
 				'rating': next((rating for rating in discussion_posts.get('ratinginfo').get('ratings') if rating.get('itemid') == post.get('id')), {})}
 			for post in post_list]

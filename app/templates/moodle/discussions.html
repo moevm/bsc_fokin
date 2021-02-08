@@ -1,6 +1,8 @@
 {% extends "moodle/base.html" %}
-{% import "moodle/macros.html" as macros %}
-{% import "moodle/filtration.html" as filtration %}
+{% import "moodle/macro_pagination.html" as macro_pagination %}
+{% import "moodle/macro_filtration.html" as macro_filtration %}
+{% import "moodle/macro_discussions.html" as macro_discussions %}
+
 
 {% block title %} - обсуждения {% endblock %}
 
@@ -14,23 +16,37 @@
 
 <h1 style="text-align: center;"> Обсуждения </h1>
 
-{{ filtration.render_filtration_block(current_user, tag_list, order_select_list, discussion_list.page, filtration_set_list, redirect) }}
+{{ macro_filtration.render_filtration_block(current_user, tag_list, order_select_list, discussion_list.page, filtration_set_list, redirect) }}
 
 <br>
 
 <div class="comment-list">
 	<div class="row">
 		<div class="col-sm-8">
-			<h2 style="text-align: center;"> Список обсуждений </h2>
+			<h2 style="text-align: center;">
+			Список обсуждений
+			<a href="" id="remove_author" class="badge badge-danger"
+			{% if current_user.filtration_set.author %}
+				author_id="{{ current_user.filtration_set.author.serial_id }}"
+				> {{ current_user.filtration_set.author.full_name }}
+			{% else %}
+				author_id=0
+				style="display: none">
+			{% endif %}
+			</a>
+			</h2>
 		</div>
 		<div class="col-sm-4" style="text-align: center;">
-			<a class="btn btn-warning" href="{{ url_for('moodle.update_discussions') }}"> Обновить </a>
+			<button class="btn btn-warning update_btn" type="button" href="{{ url_for('moodle.update_discussions') }}">
+				<span class="spinner-border spinner-border-sm update_btn_spinner" role="status" aria-hidden="true" style="display: none"> </span>
+				Обновить
+			</button>
 		</div>
 	</div>
-	{{ macros.render_discussion_list(discussion_list) }}
+	{{ macro_discussions.render_discussion_list(discussion_list) }}
 </div>
 <div class="jumbotron rounded bg-light">
-	{{ macros.render_navigation(discussion_list, 'moodle.search_discussions') }}
+	{{ macro_pagination.render_navigation(discussion_list, redirect) }}
 </div>
 
 {% endblock %}

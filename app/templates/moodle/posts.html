@@ -1,6 +1,8 @@
 {% extends "moodle/base.html" %}
-{% import "moodle/macros.html" as macros %}
-{% import "moodle/filtration.html" as filtration %}
+{% import "moodle/macro_pagination.html" as macro_pagination %}
+{% import "moodle/macro_filtration.html" as macro_filtration %}
+{% import "moodle/macro_posts.html" as macro_posts %}
+
 
 {% block title %} - посты {% endblock %}
 
@@ -14,7 +16,7 @@
 
 <h1 style="text-align: center;"> Посты </h1>
 
-{{ filtration.render_filtration_block(current_user, tag_list, order_select_list, post_list.page, filtration_set_list, redirect) }}
+{{ macro_filtration.render_filtration_block(current_user, tag_list, order_select_list, post_list.page, filtration_set_list, redirect) }}
 
 <br>
 
@@ -25,10 +27,10 @@
 		</div>
 		<div class="col-sm-4"> </div>
 	</div>
-	{{ macros.render_post_list(post_list) }}
+	{{ macro_posts.render_post_list(post_list) }}
 </div>
 <div class="jumbotron rounded bg-light">
-	{{ macros.render_navigation(post_list, 'moodle.search_posts') }}
+	{{ macro_pagination.render_navigation(post_list, redirect) }}
 </div>
 
 {% endblock %}

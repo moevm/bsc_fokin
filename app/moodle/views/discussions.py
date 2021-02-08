@@ -1,6 +1,5 @@
-from flask import render_template, request, redirect, url_for, abort
+from flask import render_template, request, redirect, url_for, abort, jsonify
 from flask_login import login_user, logout_user, login_required, current_user
-from functools import wraps
 from app.main import main
 from app.moodle import moodle
 from app.moodle.views.main import moodle_login_required
@@ -13,14 +12,16 @@ ORDER_PARAMS = [
 	{'value': '', 'label': 'По возрастанию'},
 	{'value': '-', 'label': 'По убыванию'}]
 
-
 @moodle.route('/discussions/', methods=['GET'])
 @moodle.route('/discussions/<int:page>/', methods=['GET'])
 @login_required
 @moodle_login_required
 def show_all_discussions(page=1):
-	current_user.filtration_set.update_filtration_set(request.args).save()
-	print('after', current_user.filtration_set.serial_id)
+	if request.args:
+		filtration_set_info = current_user.filtration_set.parse_url_args(request.args)
+		current_user.filtration_set.update_filtration_set(filtration_set_info).save()
+	else:
+		return redirect('{}{}'.format(url_for('.show_all_discussions', page=page), current_user.filtration_set.get_url()))
 	moodle_api = MoodleApi(current_user.moodle_url, current_user.token)
 	discussion_list = current_user.filter_and_sort_discussions().paginate(
 		page=page,
@@ -39,7 +40,7 @@ def show_all_discussions(page=1):
 		tag_list=MoodleTag.objects(),
 		order_select_list=ORDER_PARAMS,
 		filtration_set_list=FiltrationSet.objects(),
-		redirect='search_discussions')
+		redirect='moodle.show_all_discussions')
 
 
 @moodle.route('/discussions/update/', methods=['GET'])
@@ -75,15 +76,4 @@ def update_discussions():
 				forum.discussion_list.append(discussion)
 			forum.save()
 
-	return redirect(url_for('.search_discussions'))
-
-
-@moodle.route('/discussions/search/', methods=['GET'])
-@moodle.route('/discussions/search/<int:page>/', methods=['GET'])
-@login_required
-@moodle_login_required
-def search_discussions(page=1):
-	if request.args:
-		current_user.filtration_set.update_filtration_set(request.args).save()
-
-	return redirect('{}{}'.format(url_for('.show_all_discussions', page=page), current_user.filtration_set.get_url()))
+	return jsonify(redirect_url='{}{}'.format(url_for('.show_all_discussions'), current_user.filtration_set.get_url()))
