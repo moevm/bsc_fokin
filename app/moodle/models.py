@@ -18,6 +18,7 @@ class FiltrationSet(db.Document):
 	course_id_list = db.ListField(default=[])
 	tag_id_list = db.ListField(default=[])
 	author = db.ReferenceField('MoodleUser')
+	post_status = db.StringField(default='all')
 
 	def get_info(self):
 		return self.to_json()
@@ -36,6 +37,7 @@ class FiltrationSet(db.Document):
 			'course_id_list': args.getlist('course_ids[]'),
 			'tag_id_list': args.getlist('tag_ids[]'),
 			'author_id': args.get('author_id'),
+			'post_status': args.get('post_status')
 		}
 
 		return filtration_set_info
@@ -53,6 +55,7 @@ class FiltrationSet(db.Document):
 		self.course_id_list = list(map(int, filtration_set_info.get('course_id_list'))) if filtration_set_info.get('course_id_list') else []
 		self.tag_id_list = list(map(int, filtration_set_info.get('tag_id_list'))) if filtration_set_info.get('tag_id_list') else []
 		self.author = MoodleUser.objects(serial_id=filtration_set_info.get('author_id')).first() if filtration_set_info.get('author_id') else None
+		self.post_status = filtration_set_info.get('post_status')
 
 		print('Update filtration set #{}'.format(self.serial_id))
 
@@ -71,19 +74,21 @@ class FiltrationSet(db.Document):
 		self.course_id_list = old_filtration_set.course_id_list
 		self.tag_id_list = old_filtration_set.tag_id_list
 		self.author = old_filtration_set.author
+		self.post_status = old_filtration_set.post_status
 
 		print('Copy filtration_set #{} <-- #{}'.format(self.serial_id, old_filtration_set.serial_id))
 
 		return self
 
 	def get_url(self):
-		url = '?{}&{}&{}&{}&{}&{}'.format(
+		url = '?{}&{}&{}&{}&{}&{}&{}'.format(
 			self.get_date_args_url(),
 			self.get_replies_args_url(),
 			self.get_progress_args_url(),
 			self.get_courses_args_url(),
 			self.get_tags_args_url(),
-			self.get_author_args_url())
+			self.get_author_args_url(),
+			self.get_post_status_args_url())
 
 		return url
 
@@ -120,6 +125,9 @@ class FiltrationSet(db.Document):
 	def get_author_args_url(self):
 		return 'author_id={}'.format(self.author.serial_id if self.author else 0)
 
+	def get_post_status_args_url(self):
+		return 'post_status={}'.format(self.post_status)
+
 
 class MoodleTag(db.Document):
 	serial_id = db.SequenceField()
@@ -143,13 +151,16 @@ class MoodlePost(db.Document):
 	reply_subject = db.StringField(default='')
 	message = db.StringField(default='')
 	has_parent = db.BooleanField(default=False)
-	parent_id = db.IntField(default=0) # ? ReferenceField
+	parent_post = db.ReferenceField('MoodlePost')
 	time_created = db.IntField(default=0)
 	view_url = db.StringField(default='')
 	rating = db.IntField(default=0)
 	rating_count = db.IntField(default=0)
 	rating_label = db.StringField(default='')
-	tag_list = db.ListField(db.ReferenceField(MoodleTag), default=[])
+	tag_list = db.ListField(db.ReferenceField('MoodleTag'), default=[])
+	post_list = db.ListField(db.ReferenceField('MoodlePost'), default=[])
+	num_replies = db.IntField(default=0)
+	status = db.StringField(default='new')
 
 	def get_info(self):
 		return self.to_json()
@@ -166,11 +177,25 @@ class MoodlePost(db.Document):
 		self.reply_subject = post_info.get('reply_subject')
 		self.message = post_info.get('message')
 		self.has_parent = post_info.get('has_parent')
-		self.parent_id = post_info.get('parent_id')
 		self.time_created = post_info.get('time_created')
 		self.view_url = post_info.get('view_url')
 		if not self.has_parent:
-			self.discussion.modify(view_url=self.view_url)
+			self.discussion.modify(
+				discussion_post=self,
+				view_url=self.view_url)
+		else:
+			parent_post = MoodlePost.objects(moodle_id=post_info.get('parent_id')).first()
+			if parent_post:
+				if not self in parent_post.post_list:
+					parent_post.post_list.append(self)
+			else:
+				parent_post = MoodlePost.objects(moodle_id=post_info.get('parent_id')).modify(
+					post_list=[self],
+					upsert=True,
+					new=True)
+				self.parent_post = parent_post
+			parent_post.num_replies = len(parent_post.post_list)
+			parent_post.save()
 		if post_info.get('rating'):
 			self.rating = post_info.get('rating').get('rating')
 			self.rating_count = post_info.get('rating').get('count')
@@ -189,6 +214,13 @@ class MoodlePost(db.Document):
 
 		return self
 
+	def update_post_status(self, status_info):
+		self.status = status_info.get('post_status')
+		if not self.has_parent:
+			self.discussion.modify(status=self.status)
+
+		return self
+
 
 class MoodleDiscussion(db.Document):
 	serial_id = db.SequenceField()
@@ -197,6 +229,7 @@ class MoodleDiscussion(db.Document):
 	user = db.ReferenceField('MoodleUser')
 	course = db.ReferenceField('MoodleCourse')
 	forum = db.ReferenceField('MoodleForum')
+	discussion_post = db.ReferenceField('MoodlePost')
 	name = db.StringField(default='')
 	subject = db.StringField(default='')
 	message = db.StringField(default='')
@@ -205,7 +238,9 @@ class MoodleDiscussion(db.Document):
 	user_modified = db.IntField(default=0) # ? ReferenceField
 	num_replies = db.IntField(default=0)
 	view_url = db.StringField(default='')
-	post_list = db.ListField(db.ReferenceField(MoodlePost), default=[])
+	post_list = db.ListField(db.ReferenceField('MoodlePost'), default=[])
+	status = db.StringField(default='new')
+
 
 	def get_info(self):
 		return self.to_json()
@@ -237,7 +272,7 @@ class MoodleForum(db.Document):
 	name = db.StringField(default='')
 	intro = db.StringField(default='')
 	scale = db.IntField(default=0)
-	discussion_list = db.ListField(db.ReferenceField(MoodleDiscussion), default=[])
+	discussion_list = db.ListField(db.ReferenceField('MoodleDiscussion'), default=[])
 
 	def get_info(self):
 		return self.to_json()
@@ -267,7 +302,7 @@ class MoodleCourse(db.Document):
 	show_grades = db.BooleanField(default=False)
 	start_date = db.IntField(default=0)
 	cover = db.StringField(default='')
-	forum_list = db.ListField(db.ReferenceField(MoodleForum), default=[])
+	forum_list = db.ListField(db.ReferenceField('MoodleForum'), default=[])
 	forum_count = db.IntField(default=0)
 
 	def get_info(self):
@@ -318,8 +353,8 @@ class MoodleTeacher(BaseTeacher):
 	username = db.StringField(default='')
 	full_name = db.StringField(default='')
 	user_picture_url = db.StringField(default='')
-	course_list = db.ListField(db.ReferenceField(MoodleCourse), default=[])
-	filtration_set = db.ReferenceField(FiltrationSet)
+	course_list = db.ListField(db.ReferenceField('MoodleCourse'), default=[])
+	filtration_set = db.ReferenceField('FiltrationSet')
 
 	def get_info(self):
 		return self.to_json()

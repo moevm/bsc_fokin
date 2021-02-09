@@ -1,4 +1,4 @@
-from flask import render_template, request, redirect, url_for, abort
+from flask import render_template, request, redirect, url_for, abort, jsonify
 from flask_login import login_user, logout_user, login_required, current_user
 from app.main import main
 from app.moodle import moodle
@@ -11,6 +11,11 @@ POSTS_PER_PAGE = 5
 ORDER_PARAMS = [
 	{'value': '', 'label': 'По возрастанию'},
 	{'value': '-', 'label': 'По убыванию'}]
+
+POST_STATUSES = {
+	'new': {'label': 'Новое', 'color': 'info'},
+	'in progress': {'label': 'В обработке', 'color': 'secondary'},
+	'closed': {'label': 'Закрыто', 'color': 'success'}}
 
 
 @moodle.route('/posts/', methods=['GET'])
@@ -41,4 +46,17 @@ def show_all_posts(page=1):
 		tag_list=MoodleTag.objects(),
 		order_select_list=ORDER_PARAMS,
 		filtration_set_list=FiltrationSet.objects(),
-		redirect='moodle.show_all_posts')
+		post_status_dict=POST_STATUSES,
+		redirect_url='moodle.show_all_posts')
+
+
+@moodle.route('/post/update_status/<int:post_id>/', methods=['POST'])
+@login_required
+@moodle_login_required
+def update_post_status(post_id):
+	redirect_url = request.args.get('redirect_url')
+	status_info = request.get_json()
+	post = MoodlePost.objects(moodle_id=post_id).first()
+	post.update_post_status(status_info).save()
+
+	return jsonify(redirect_url='{}{}'.format(redirect_url, current_user.filtration_set.get_url()))

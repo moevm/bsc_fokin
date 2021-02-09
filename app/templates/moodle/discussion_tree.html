@@ -1,0 +1,31 @@
+{% extends "moodle/base.html" %}
+{% import "moodle/macro_discussion_tree.html" as macro_discussion_tree %}
+
+
+{% block title %} - обсуждение {% endblock %}
+
+{% block extra_css %}
+
+<link rel="stylesheet" href="{{ url_for('static', filename = 'css/comments.css') }}">
+
+{% endblock %}
+
+{% block content %}
+
+<h1 style="text-align: center;"> Обсуждение #{{ post_list[0].discussion.moodle_id }} </h1>
+
+<br>
+
+<div class="row">
+	<div class="col-sm-8">
+		{{ macro_discussion_tree.render_post_tree(post_list, target_post_id, post_status_dict, redirect_url) }}
+	</div>
+</div>
+
+{% endblock %}
+
+{% block extra_javascript %}
+
+<script src="{{ url_for('static', filename = 'js/filtration.js') }}">	</script>
+
+{% endblock %}

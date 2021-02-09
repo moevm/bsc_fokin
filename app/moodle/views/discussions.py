@@ -12,6 +12,12 @@ ORDER_PARAMS = [
 	{'value': '', 'label': 'По возрастанию'},
 	{'value': '-', 'label': 'По убыванию'}]
 
+POST_STATUSES = {
+	'new': {'label': 'Новое', 'color': 'info'},
+	'in progress': {'label': 'В обработке', 'color': 'secondary'},
+	'closed': {'label': 'Закрыто', 'color': 'success'}}
+
+
 @moodle.route('/discussions/', methods=['GET'])
 @moodle.route('/discussions/<int:page>/', methods=['GET'])
 @login_required
@@ -40,7 +46,33 @@ def show_all_discussions(page=1):
 		tag_list=MoodleTag.objects(),
 		order_select_list=ORDER_PARAMS,
 		filtration_set_list=FiltrationSet.objects(),
-		redirect='moodle.show_all_discussions')
+		post_status_dict=POST_STATUSES,
+		redirect_url='moodle.show_all_discussions')
+
+
+@moodle.route('/discussion/<int:discussion_id>/<int:post_id>/', methods=['GET'])
+@login_required
+@moodle_login_required
+def show_discussion_tree(discussion_id, post_id):
+	moodle_api = MoodleApi(current_user.moodle_url, current_user.token)
+	discussion = MoodleDiscussion.objects(discussion_id=discussion_id).first()
+	if not discussion:
+		abort(404)
+
+	for post in discussion.post_list:
+		user_course_grade = moodle_api.get_user_course_grade(post.course.moodle_id, post.user.moodle_id)
+		if user_course_grade.get('exception'):
+			print(user_course_grade.get('exception'))
+		else:
+			post.user.update_course_grade(user_course_grade.get('user_grade')).save()
+			post.course.modify(grade_max=user_course_grade.get('course_grade')) # Плохо обновлять max балл по курсу с каждым постом, нужно переделать!!!
+
+	return render_template(
+		"moodle/discussion_tree.html",
+		post_list=[discussion.discussion_post],
+		target_post_id=post_id,
+		post_status_dict=POST_STATUSES,
+		redirect_url='moodle.show_discussion_tree')
 
 
 @moodle.route('/discussions/update/', methods=['GET'])
