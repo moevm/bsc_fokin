@@ -1,4 +1,4 @@
-{% macro render_discussion_list(discussion_list) %}
+{% macro render_discussion_list(discussion_list, post_status_dict, redirect_url) %}
 <div class="row">
 	<div class="col-sm-8">
 		{% for discussion in discussion_list.items %}
@@ -9,7 +9,7 @@
 				<img src="{{ discussion.user.user_picture_url }}" class="card-img-top" alt="...">
 				<div class="card-body">
 					<h5 class="card-title">
-						<a href="" class="badge badge-primary author_filtration" author_id="{{ discussion.user.serial_id }}"> {{ discussion.user.full_name }} </a>
+						<a href="#" class="badge badge-primary author_filtration" author_id="{{ discussion.user.serial_id }}"> {{ discussion.user.full_name }} </a>
 					</h5>
 				</div>
 				<ul class="list-group list-group-flush">
@@ -37,17 +37,31 @@
 				<ul class="list-group list-group-flush">
 					<li class="list-group-item list-group-item-secondary">
 						<b> Курс: </b>
-						<a href="" class="badge badge-primary course_filtration" course_id="{{ discussion.course.moodle_id }}"> {{ discussion.course.full_name }} </a>
+						<a href="#" class="badge badge-primary course_filtration" course_id="{{ discussion.course.moodle_id }}"> {{ discussion.course.full_name }} </a>
 					</li>
 					<li class="list-group-item list-group-item-secondary"> <b> Форум: </b> {{ discussion.forum.name }} </li>
-					<li class="list-group-item list-group-item-secondary"> <b> Тема: </b> {{ discussion.subject }} </li>
+					<li class="list-group-item list-group-item-secondary"> <b> Тема: </b>
+						<a href="{{ discussion.view_url }}" class="badge badge-secondary"> {{ discussion.subject }} </a>
+					</li>
 				</ul>
 				<div class="card-body">
 					<p class="card-text"> {{ discussion.message | safe }} </p>
 				</div>
 				<div class="card-footer text-right">
-					<a href="" class="badge badge-warning more_discussion_info" discussion_id="{{ discussion.serial_id }}"> Подробнее </a>
-					<a href="" class="badge badge-primary discussion_status" discussion_id="{{ discussion.serial_id }}"> Обработано </a>
+					<a href="{{ url_for('.show_discussion_tree', discussion_id=discussion.discussion_id, post_id=discussion.discussion_post.moodle_id) }}#{{ discussion.discussion_post.moodle_id }}" class="badge badge-warning"> Подробнее </a>
+					<div class="btn-group" role="group">
+						<a href="#" class="badge badge-{{ post_status_dict[discussion.discussion_post.status]['color'] }} post_status" post_status="{{ discussion.discussion_post.status }}"> {{ post_status_dict[discussion.discussion_post.status]['label'] }} </a>
+						<div class="btn-group" role="group">
+							<a id="status_btn_dropdown" type="button" class="badge badge-{{ post_status_dict[discussion.discussion_post.status]['color'] }} dropdown-toggle text-white" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" redirect_url="{{ redirect_url }}"> </a>
+							<div class="dropdown-menu" aria-labelledby="status_btn_dropdown">
+								{% for post_status in post_status_dict.keys() %}
+									{% if post_status != discussion.discussion_post.status %}
+									<a href="{{ url_for('.update_post_status', post_id=discussion.discussion_post.moodle_id) }}?redirect_url={{ redirect_url }}" class="dropdown-item badge badge-{{ post_status_dict[post_status]['color'] }} update_post_status" post_status="{{ post_status }}"> {{ post_status_dict[post_status]['label'] }} </a>
+									{% endif %}
+								{% endfor %}
+							</div>
+						</div>
+					</div>
 				</div>
 			</div>
 		</div>

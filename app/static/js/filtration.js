@@ -85,6 +85,7 @@ $('#search_btn').click(function(event) {
 			course_id_list: $('#course_id_list').val(),
 			tag_id_list: $('#tag_id_list').val(),
 			author_id: $('#remove_author').attr('author_id'),
+			post_status: $('#remove_status').attr('post_status')
 		}),
 		contentType: "application/json",
 		dataType: "json",
@@ -127,6 +128,7 @@ $('#export_btn').click(function(event) {
 			course_id_list: $('#course_id_list').val(),
 			tag_id_list: $('#tag_id_list').val(),
 			author_id: $('#remove_author').attr('author_id'),
+			post_status: $('#remove_status').attr('post_status'),
 			title: $('#filtration_set_title').val(),
 		}),
 		contentType: "application/json",
@@ -144,7 +146,7 @@ $('.author_filtration').click(function(event) {
 	$('#search_btn').click();
 });
 
-// нажатие на кнопку удаления автору
+// нажатие на кнопку удаления фильтра по автору
 $('#remove_author').click(function(event) {
 	event.preventDefault();
 	$('#remove_author').attr('author_id', 0);
@@ -163,4 +165,35 @@ $('.tag_filtration').click(function(event) {
 	event.preventDefault();
 	$('#tag_id_list').val([$(this).attr('tag_id')]);
 	$('#search_btn').click();
+});
+
+// нажатие на кнопки фильтра по статусу
+$('.post_status').click(function(event) {
+	event.preventDefault();
+	$('#remove_status').attr('post_status', $(this).attr('post_status'));
+	$('#search_btn').click();
+});
+
+// нажатие на кнопку удаления фильтра по статусу
+$('#remove_status').click(function(event) {
+	event.preventDefault();
+	$('#remove_status').attr('post_status', 'all');
+	$('#search_btn').click();
+});
+
+// нажатие на кнопки смены статуса
+$('.update_post_status').click(function(event) {
+	event.preventDefault();
+	$.ajax({
+		type: 'POST',
+		url: $(this).attr('href'),
+		data: JSON.stringify({
+			post_status: $(this).attr('post_status'),
+		}),
+		contentType: "application/json",
+		dataType: "json",
+		success: function(data) {
+			location.href = data.redirect_url;
+		}
+	});
 });

@@ -16,21 +16,40 @@
 
 <h1 style="text-align: center;"> Посты </h1>
 
-{{ macro_filtration.render_filtration_block(current_user, tag_list, order_select_list, post_list.page, filtration_set_list, redirect) }}
+{{ macro_filtration.render_filtration_block(current_user, tag_list, order_select_list, post_list.page, filtration_set_list, redirect_url) }}
 
 <br>
 
-<div class="comment-list">
-	<div class="row">
-		<div class="col-sm-8">
-			<h2 style="text-align: center;"> Список постов </h2>
-		</div>
-		<div class="col-sm-4"> </div>
+<div class="row">
+	<div class="col-sm-8">
+		<h2 style="text-align: center;">
+			Список постов
+			<div class="btn-group" role="group">
+				{% if current_user.filtration_set.author %}
+					<span href="#" class="badge badge-primary"> {{ current_user.filtration_set.author.full_name }}
+						<a href="#" id="remove_author" class="badge badge-danger" author_id="{{ current_user.filtration_set.author.serial_id }}"> X </a>
+					</span>
+				{% else %}
+					<a href="#" id="remove_author" class="badge badge-danger" author_id=0 style="display: none"> </a>
+				{% endif %}
+			</div>
+			<div class="btn-group" role="group">
+				{% if current_user.filtration_set.post_status != 'all' %}
+					<span href="#" class="badge badge-{{ post_status_dict[current_user.filtration_set.post_status]['color'] }}"> {{ post_status_dict[current_user.filtration_set.post_status]['label'] }}
+						<a href="#" id="remove_status" class="badge badge-danger" post_status="{{ current_user.filtration_set.post_status }}"> X </a>
+					</span>
+				{% else %}
+					<a href="#" id="remove_status" class="badge badge-danger" post_status="all"	style="display: none"> </a>
+				{% endif %}
+			</div>
+		</h2>
 	</div>
-	{{ macro_posts.render_post_list(post_list) }}
+	<div class="col-sm-4"> </div>
 </div>
+{{ macro_posts.render_post_list(post_list, post_status_dict) }}
+
 <div class="jumbotron rounded bg-light">
-	{{ macro_pagination.render_navigation(post_list, redirect) }}
+	{{ macro_pagination.render_navigation(post_list, redirect_url) }}
 </div>
 
 {% endblock %}
