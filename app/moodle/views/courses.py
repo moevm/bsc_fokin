@@ -40,8 +40,11 @@ def update_courses():
 				new=True)
 			forum.update_forum(forum_info).save()
 			course_forum_list.append(forum)
-		course.update_course(course_info, course_forum_list).save()
+		course.update_course(course_info).save()
+		course.modify(
+			forum_list=course_forum_list,
+			forum_count=len(course_forum_list))
 	# save updated user in db
-	current_user.update_user_courses(user_course_list).save()
+	current_user.modify(course_list=user_course_list)
 
 	return jsonify(redirect_url=url_for('.show_all_courses'))

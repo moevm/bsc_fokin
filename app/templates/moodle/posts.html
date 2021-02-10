@@ -46,7 +46,8 @@
 	</div>
 	<div class="col-sm-4"> </div>
 </div>
-{{ macro_posts.render_post_list(post_list, post_status_dict) }}
+
+{{ macro_posts.render_post_list(post_list, post_status_dict, redirect_url) }}
 
 <div class="jumbotron rounded bg-light">
 	{{ macro_pagination.render_navigation(post_list, redirect_url) }}

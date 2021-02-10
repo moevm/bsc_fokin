@@ -4,12 +4,12 @@ from app.main import main
 from app.moodle import moodle
 from app.moodle.views.main import moodle_login_required
 from app.moodle.moodle_api import MoodleApi
-from app.moodle.models import MoodleTeacher, MoodleCourse, MoodleForum, MoodleDiscussion, MoodlePost, MoodleTag, FiltrationSet
+from app.moodle.models import MoodleTeacher, MoodleUser, MoodleCourse, MoodleForum, MoodleDiscussion, MoodlePost, MoodleTag, FiltrationSet
 
 DISCUSSIONS_PER_PAGE = 5
 
 ORDER_PARAMS = [
-	{'value': '', 'label': 'По возрастанию'},
+	{'value': '+', 'label': 'По возрастанию'},
 	{'value': '-', 'label': 'По убыванию'}]
 
 POST_STATUSES = {
@@ -29,16 +29,7 @@ def show_all_discussions(page=1):
 	else:
 		return redirect('{}{}'.format(url_for('.show_all_discussions', page=page), current_user.filtration_set.get_url()))
 	moodle_api = MoodleApi(current_user.moodle_url, current_user.token)
-	discussion_list = current_user.filter_and_sort_discussions().paginate(
-		page=page,
-		per_page=DISCUSSIONS_PER_PAGE)
-	for discussion in discussion_list.items:
-		user_course_grade = moodle_api.get_user_course_grade(discussion.course.moodle_id, discussion.user.moodle_id)
-		if user_course_grade.get('exception'):
-			print(user_course_grade.get('exception'))
-		else:
-			discussion.user.update_course_grade(user_course_grade.get('user_grade')).save()
-			discussion.course.modify(grade_max=user_course_grade.get('course_grade')) # Плохо обновлять max балл по курсу с каждым обсуждением, нужно переделать!!!
+	discussion_list = current_user.filter_and_sort_discussions(current_user).paginate(page=page, per_page=DISCUSSIONS_PER_PAGE)
 
 	return render_template(
 		"moodle/discussions.html",
@@ -59,14 +50,6 @@ def show_discussion_tree(discussion_id, post_id):
 	if not discussion:
 		abort(404)
 
-	for post in discussion.post_list:
-		user_course_grade = moodle_api.get_user_course_grade(post.course.moodle_id, post.user.moodle_id)
-		if user_course_grade.get('exception'):
-			print(user_course_grade.get('exception'))
-		else:
-			post.user.update_course_grade(user_course_grade.get('user_grade')).save()
-			post.course.modify(grade_max=user_course_grade.get('course_grade')) # Плохо обновлять max балл по курсу с каждым постом, нужно переделать!!!
-
 	return render_template(
 		"moodle/discussion_tree.html",
 		post_list=[discussion.discussion_post],
@@ -84,6 +67,7 @@ def update_discussions():
 	for course in current_user.course_list:
 		for forum in course.forum_list:
 			discussion_list = moodle_api.get_forum_discussions(forum.moodle_id)
+			forum_discussion_list = []
 			for discussion_info in discussion_list:
 				discussion = MoodleDiscussion.objects(moodle_id=discussion_info.get('moodle_id')).modify(
 					moodle_id=discussion_info.get('moodle_id'),
@@ -93,19 +77,35 @@ def update_discussions():
 					upsert=True,
 					new=True)
 				# update discussion posts
+				discussion_post_list = []
 				post_list = moodle_api.get_discussion_posts(discussion.discussion_id)
 				for post_info in post_list:
 					post = MoodlePost.objects(moodle_id=post_info.get('moodle_id')).modify(
 						moodle_id=post_info.get('moodle_id'),
+						user=MoodleUser.objects(moodle_id=post_info.get('user_id')).modify(
+							moodle_id=post_info.get('user_id'),
+							full_name=post_info.get('user_full_name'),
+							user_url=post_info.get('user_url'),
+							user_picture_url=post_info.get('user_picture_url'),
+							upsert=True,
+							new=True),
 						course=course,
 						forum=forum,
 						discussion=discussion,
 						upsert=True,
 						new=True)
+					# update user course grade
+					user_course_grade = moodle_api.get_user_course_grade(post.course.moodle_id, post.user.moodle_id)
+					if user_course_grade.get('exception'):
+						print(user_course_grade.get('exception'))
+					else:
+						post.user.update_course_grade(user_course_grade.get('user_grade')).save()
+						post.course.modify(grade_max=user_course_grade.get('course_grade')) # Плохо обновлять max балл по курсу с каждым постом, нужно переделать!!!
 					post.update_post(post_info).save()
-					discussion.post_list.append(post)
+					discussion_post_list.append(post)
 				discussion.update_discussion(discussion_info).save()
-				forum.discussion_list.append(discussion)
-			forum.save()
+				discussion.modify(post_list=discussion_post_list)
+				forum_discussion_list.append(discussion)
+			forum.modify(discussion_list=forum_discussion_list)
 
 	return jsonify(redirect_url='{}{}'.format(url_for('.show_all_discussions'), current_user.filtration_set.get_url()))
