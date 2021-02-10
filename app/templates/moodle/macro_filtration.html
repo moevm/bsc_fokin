@@ -1,4 +1,4 @@
-{% macro render_filtration_block(current_user, tag_list, order_select_list, page, filtration_set_list, redirect) %}
+{% macro render_filtration_block(current_user, tag_list, order_select_list, page, filtration_set_list, redirect_url) %}
 
 <!-- Import modal -->
 <div class="modal fade" id="import_modal" tabindex="-1" role="dialog" aria-hidden="true">
@@ -20,7 +20,7 @@
 			</div>
 			<div class="modal-footer">
 				<a class="btn btn-secondary text-white" data-dismiss="modal"> Закрыть </a>
-				<a id="import_btn" class="btn btn-primary text-white" redirect_url='{{ url_for(redirect) }}'> Применить </a>
+				<a id="import_btn" class="btn btn-primary text-white" redirect_url_url='{{ url_for(redirect_url) }}'> Применить </a>
 			</div>
 		</div>
 	</div>
@@ -42,7 +42,7 @@
 			</div>
 			<div class="modal-footer">
 				<a class="btn btn-secondary text-white" data-dismiss="modal"> Закрыть </a>
-				<a id="export_btn" class="btn btn-primary text-white" redirect_url='{{ url_for(redirect, page=page) }}'> Применить </a>
+				<a id="export_btn" class="btn btn-primary text-white" redirect_url_url='{{ url_for(redirect_url, page=page) }}'> Применить </a>
 			</div>
 		</div>
 	</div>
@@ -129,7 +129,7 @@
 		<div class="card-body bg-light" style=" display: flex; justify-content: center; align-items: center">
 			<select id="course_id_list" class="" name="" multiple="multiple" size="5">
 				{% for course in current_user.course_list %}
-					<option value="{{ course.moodle_id }}" {% if course.moodle_id in current_user.filtration_set.course_id_list %} selected {% endif %}> {{ course.full_name }} </option>
+					<option value="{{ course.moodle_id }}" {% if course in current_user.filtration_set.course_list %} selected {% endif %}> {{ course.full_name }} </option>
 				{% endfor %}
 			</select>
 		</div>
@@ -143,7 +143,7 @@
 		<div class="card-body bg-light" style=" display: flex; justify-content: center; align-items: center">
 			<select id="tag_id_list" class="" name="" multiple="multiple" size="5">
 				{% for tag in tag_list %}
-					<option value="{{ tag.moodle_id }}" {% if tag.moodle_id in current_user.filtration_set.tag_id_list %} selected {% endif %}> {{ tag.display_name }} </option>
+					<option value="{{ tag.moodle_id }}" {% if tag in current_user.filtration_set.tag_list %} selected {% endif %}> {{ tag.display_name }} </option>
 				{% endfor %}
 			</select>
 		</div>
@@ -154,7 +154,7 @@
 		<div class="card-body bg-light" style="display: flex; flex-direction: column; justify-content: space-evenly">
 			<a href="#" class="btn btn-warning" data-toggle="modal" data-target="#import_modal"> Импорт </a>
 			<a href="#" class="btn btn-primary" data-toggle="modal" data-target="#export_modal"> Сохранить </a>
-			<a href="#" id="search_btn" class="btn btn-success" redirect_url='{{ url_for(redirect) }}'> Поиск </a>
+			<a href="#" id="search_btn" class="btn btn-success" redirect_url='{{ url_for(redirect_url) }}'> Поиск </a>
 		</div>
 	</div>
 

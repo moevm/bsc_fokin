@@ -51,7 +51,7 @@ $('.day_filtration').click(function(event) {
 	});
 });
 
-// обновление обсуждений
+// обновление обсуждений | курсов
 $('.update_btn').click(function(event) {
 	event.preventDefault();
 	$(this).attr('disabled', 'disabled');
@@ -62,6 +62,9 @@ $('.update_btn').click(function(event) {
 		dataType: "json",
 		success: function(data) {
 			location.href = data.redirect_url;
+		},
+		error: function() {
+			location.reload();
 		}
 	});
 });
@@ -194,6 +197,9 @@ $('.update_post_status').click(function(event) {
 		dataType: "json",
 		success: function(data) {
 			location.href = data.redirect_url;
+		},
+		error: function() {
+			location.reload();
 		}
 	});
 });

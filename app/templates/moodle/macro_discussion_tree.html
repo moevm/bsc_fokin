@@ -62,7 +62,7 @@ href="#"{% macro render_post_tree(post_list, target_post_id, post_status_dict, r
 					<div class="dropdown-menu" aria-labelledby="status_btn_dropdown">
 						{% for post_status in post_status_dict.keys() %}
 							{% if post_status != post.status %}
-							<a href="{{ url_for('.update_post_status', post_id=post.moodle_id) }}?redirect_url={{ redirect_url }}" class="dropdown-item badge badge-{{ post_status_dict[post_status]['color'] }} update_post_status" post_status="{{ post_status }}"> {{ post_status_dict[post_status]['label'] }} </a>
+							<a href="{{ url_for('moodle.update_post_status', post_id=post.moodle_id) }}?redirect_url={{ url_for(redirect_url, discussion_id=post.discussion.discussion_id, post_id=post.moodle_id) }}#{{ post.moodle_id }}" class="dropdown-item badge badge-{{ post_status_dict[post_status]['color'] }} update_post_status" post_status="{{ post_status }}"> {{ post_status_dict[post_status]['label'] }} </a>
 							{% endif %}
 						{% endfor %}
 					</div>
@@ -77,7 +77,7 @@ href="#"{% macro render_post_tree(post_list, target_post_id, post_status_dict, r
 <div class="row">
 	<div class="col-1"> </div>
 	<div class="col-11">
-		{{ render_post_tree(post.post_list, target_post_id, post_status_dict) }}
+		{{ render_post_tree(post.post_list, target_post_id, post_status_dict, redirect_url) }}
 	</div>
 </div>
 

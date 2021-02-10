@@ -9,7 +9,7 @@ from app.moodle.models import MoodlePost, MoodleTag, FiltrationSet
 POSTS_PER_PAGE = 5
 
 ORDER_PARAMS = [
-	{'value': '', 'label': 'По возрастанию'},
+	{'value': '+', 'label': 'По возрастанию'},
 	{'value': '-', 'label': 'По убыванию'}]
 
 POST_STATUSES = {
@@ -29,16 +29,7 @@ def show_all_posts(page=1):
 	else:
 		return redirect('{}{}'.format(url_for('.show_all_posts', page=page), current_user.filtration_set.get_url()))
 	moodle_api = MoodleApi(current_user.moodle_url, current_user.token)
-	post_list = current_user.filter_and_sort_posts().paginate(
-		page=page,
-		per_page=POSTS_PER_PAGE)
-	for post in post_list.items:
-		user_course_grade = moodle_api.get_user_course_grade(post.course.moodle_id, post.user.moodle_id)
-		if user_course_grade.get('exception'):
-			print(user_course_grade.get('exception'))
-		else:
-			post.user.update_course_grade(user_course_grade.get('user_grade')).save()
-			post.course.modify(grade_max=user_course_grade.get('course_grade')) # Плохо обновлять max балл по курсу с каждым обсуждением, нужно переделать!!!
+	post_list = current_user.filter_and_sort_posts(current_user).paginate(page=page, per_page=POSTS_PER_PAGE)
 
 	return render_template(
 		"moodle/posts.html",
@@ -54,9 +45,9 @@ def show_all_posts(page=1):
 @login_required
 @moodle_login_required
 def update_post_status(post_id):
-	redirect_url = request.args.get('redirect_url')
+	redirect_url = request.args.get('redirect_url') if request.args.get('redirect_url') == 'moodle.show_discussion_tree' else '{}{}'.format(request.args.get('redirect_url'), current_user.filtration_set.get_url())
 	status_info = request.get_json()
 	post = MoodlePost.objects(moodle_id=post_id).first()
 	post.update_post_status(status_info).save()
 
-	return jsonify(redirect_url='{}{}'.format(redirect_url, current_user.filtration_set.get_url()))
+	return jsonify(redirect_url=redirect_url)

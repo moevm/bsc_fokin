@@ -154,7 +154,7 @@ class MoodleApi:
 				'name': discussion.get('name'),
 				'subject': discussion.get('subject'),
 				'message': discussion.get('message'),
-				'created': discussion.get('created'),
+				'time_created': discussion.get('created'),
 				'user_id': discussion.get('userid'),
 				'user_full_name': discussion.get('userfullname'),
 				'user_picture_url': discussion.get('userpictureurl'),
