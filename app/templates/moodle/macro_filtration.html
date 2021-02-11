@@ -20,7 +20,7 @@
 			</div>
 			<div class="modal-footer">
 				<a class="btn btn-secondary text-white" data-dismiss="modal"> Закрыть </a>
-				<a id="import_btn" class="btn btn-primary text-white" redirect_url_url='{{ url_for(redirect_url) }}'> Применить </a>
+				<a id="import_btn" class="btn btn-primary text-white" redirect_url='{{ url_for(redirect_url) }}'> Применить </a>
 			</div>
 		</div>
 	</div>
@@ -42,7 +42,7 @@
 			</div>
 			<div class="modal-footer">
 				<a class="btn btn-secondary text-white" data-dismiss="modal"> Закрыть </a>
-				<a id="export_btn" class="btn btn-primary text-white" redirect_url_url='{{ url_for(redirect_url, page=page) }}'> Применить </a>
+				<a id="export_btn" class="btn btn-primary text-white" redirect_url='{{ url_for(redirect_url, page=page) }}'> Применить </a>
 			</div>
 		</div>
 	</div>
