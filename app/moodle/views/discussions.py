@@ -1,3 +1,4 @@
+import time
 from flask import render_template, request, redirect, url_for, abort, jsonify
 from flask_login import login_user, logout_user, login_required, current_user
 from app.main import main
@@ -64,6 +65,10 @@ def show_discussion_tree(discussion_id, post_id):
 def update_discussions():
 	moodle_api = MoodleApi(current_user.moodle_url, current_user.token)
 	# update all discussions
+	old_discussion_amount = MoodleDiscussion.objects().count()
+	old_post_amount = MoodlePost.objects().count()
+	start_time = time.time()
+	# start
 	for course in current_user.course_list:
 		for forum in course.forum_list:
 			discussion_list = moodle_api.get_forum_discussions(forum.moodle_id)
@@ -107,5 +112,9 @@ def update_discussions():
 				discussion.modify(post_list=discussion_post_list)
 				forum_discussion_list.append(discussion)
 			forum.modify(discussion_list=forum_discussion_list)
+	# end
+	print('Импорт данных занял --- {} --- секунд.'.format((time.time() - start_time)))
+	print('Загружено обсуждений: {}, новых: {}.'.format(MoodleDiscussion.objects().count(), (MoodleDiscussion.objects().count() - old_discussion_amount)))
+	print('Загружено постов: {}, новых: {}.'.format(MoodlePost.objects().count(), (MoodlePost.objects().count() - old_post_amount)))
 
 	return jsonify(redirect_url='{}{}'.format(url_for('.show_all_discussions'), current_user.filtration_set.get_url()))

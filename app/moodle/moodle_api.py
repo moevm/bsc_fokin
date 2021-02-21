@@ -1,3 +1,5 @@
+import random
+import string
 import requests
 
 LOGIN_ENDPOINT = '/login/token.php'
@@ -14,6 +16,14 @@ PARAM_COURSE_ID = 'courseid'
 PARAM_COURSE_IDS = 'courseids[]'
 PARAM_FORUM_ID = 'forumid'
 PARAM_DISCUSSION_ID = 'discussionid'
+PARAM_POST_ID = 'postid'
+PARAM_SUBJECT = 'subject'
+PARAM_MESSAGE = 'message'
+# ******************************************************************************
+
+
+def get_random_str_by_len(size):
+	return ''.join(random.choice(string.ascii_letters) for _ in range(size))
 
 
 class MoodleAuth:
@@ -102,6 +112,30 @@ class MoodleApi:
 			PARAM_USER_ID: user_id,
 			PARAM_TOKEN: self.__token,
 			PARAM_FUNCTION: 'gradereport_user_get_grade_items',
+			PARAM_FORMAT: 'json'}
+
+		return requests.get(url, params=param_dict).json()
+
+	def __add_forum_discussion(self, forum_id):
+		url = self.__moodle_url + WEBSERVICE_ENDPOINT
+		param_dict = {
+			PARAM_FORUM_ID: forum_id,
+			PARAM_SUBJECT: get_random_str_by_len(10),
+			PARAM_MESSAGE: '<p>{}</p>'.format(get_random_str_by_len(100)),
+			PARAM_TOKEN: self.__token,
+			PARAM_FUNCTION: 'mod_forum_add_discussion',
+			PARAM_FORMAT: 'json'}
+
+		return requests.get(url, params=param_dict).json()
+
+	def __add_discussion_post(self, post_id):
+		url = self.__moodle_url + WEBSERVICE_ENDPOINT
+		param_dict = {
+			PARAM_POST_ID: post_id,
+			PARAM_SUBJECT: get_random_str_by_len(10),
+			PARAM_MESSAGE: '<p>{}</p>'.format(get_random_str_by_len(100)),
+			PARAM_TOKEN: self.__token,
+			PARAM_FUNCTION: 'mod_forum_add_discussion_post',
 			PARAM_FORMAT: 'json'}
 
 		return requests.get(url, params=param_dict).json()
@@ -204,3 +238,13 @@ class MoodleApi:
 				break
 
 		return user_course_grade
+
+	def add_forum_discussion(self, forum_id):
+		discussion_info = self.__add_forum_discussion(forum_id)
+
+		return discussion_info.get('discussionid')
+
+	def add_discussion_post(self, post_id):
+		post_info = self.__add_discussion_post(post_id)
+
+		return post_info.get('postid')

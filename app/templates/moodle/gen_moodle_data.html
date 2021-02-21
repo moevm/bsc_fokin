@@ -1,0 +1,31 @@
+{% extends "moodle/base.html" %}
+
+{% block title %} - генератор {% endblock %}
+
+{% block content %}
+
+<h1 style="text-align: center;"> Генератор обсужений и постов Moodle </h1>
+<div class="row">
+	<div class="col-8">
+		<label for="amount_list"> Количество постов: </label>
+		<select id="amount_list" class="" name="">
+			{% for amount in amount_select_list %}
+				<option value="{{ amount }}"> {{ amount }} </option>
+			{% endfor %}
+		</select>
+	</div>
+	<div class="col-sm-4" style="text-align: center;">
+		<button id="gen_btn" class="btn btn-warning" type="button" href="{{ url_for('moodle.generate_moodle_data') }}">
+			<span class="spinner-border spinner-border-sm gen_btn_spinner" role="status" aria-hidden="true" style="display: none"> </span>
+			Генерировать
+		</button>
+	</div>
+</div>
+
+{% endblock %}
+
+{% block extra_javascript %}
+
+<script src="{{ url_for('static', filename = 'js/moodle_generator.js') }}">	</script>
+
+{% endblock %}
