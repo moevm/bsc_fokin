@@ -18,7 +18,8 @@
 <body>
 
 	<div class="d-flex flex-column flex-md-row align-items-center p-3 py-4 px-md-4 mb-3 border-bottom shadow-sm" style="background-color: #f98012">
-		<a class="mr-md-auto text-white" href="{{ url_for('main.index') }}"> Главная </a>
+		<a class="btn btn-secondary text-white my-2 my-md-0 mr-md-3" href="{{ url_for('main.index') }}"> Главная </a>
+		<a class="btn btn-success text-white mr-md-auto" href="{{ url_for('moodle.show_moodle_gen_page') }}"> Генератор </a>
 		<nav class="my-2 my-md-0 mr-md-3">
 			<a class="btn btn-primary text-white" href="{{ url_for('moodle.show_all_posts') }}"> Посты </a>
 			<a class="btn btn-warning text-white" href="{{ url_for('moodle.show_all_discussions') }}"> Обсуждения </a>

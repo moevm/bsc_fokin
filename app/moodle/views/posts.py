@@ -45,7 +45,7 @@ def show_all_posts(page=1):
 @login_required
 @moodle_login_required
 def update_post_status(post_id):
-	redirect_url = request.args.get('redirect_url') if request.args.get('redirect_url') == 'moodle.show_discussion_tree' else '{}{}'.format(request.args.get('redirect_url'), current_user.filtration_set.get_url())
+	redirect_url = request.args.get('redirect_url')
 	status_info = request.get_json()
 	post = MoodlePost.objects(moodle_id=post_id).first()
 	post.update_post_status(status_info).save()

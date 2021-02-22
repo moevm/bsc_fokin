@@ -8,7 +8,7 @@ href="#"{% macro render_post_tree(post_list, target_post_id, post_status_dict, r
 		<img src="{{ post.user.user_picture_url }}" class="card-img-top" alt="...">
 		<div class="card-body">
 			<h5 class="card-title">
-				<a href="#" class="badge badge-primary author_filtration" author_id="{{ post.user.serial_id }}"> {{ post.user.full_name }} </a>
+				<span class="badge badge-primary"> {{ post.user.full_name }} </span>
 			</h5>
 		</div>
 		<ul class="list-group list-group-flush">
@@ -36,7 +36,7 @@ href="#"{% macro render_post_tree(post_list, target_post_id, post_status_dict, r
 		<ul class="list-group list-group-flush">
 			<li class="list-group-item list-group-item-secondary">
 				<b> Курс: </b>
-				<a name="{{ post.moodle_id }}" href="#" class="badge badge-primary course_filtration" course_id="{{ post.course.moodle_id }}"> {{ post.course.full_name }} </a>
+				<span name="{{ post.moodle_id }}" class="badge badge-primary"> {{ post.course.full_name }} </span>
 			</li>
 			<li class="list-group-item list-group-item-secondary"> <b> Форум: </b> {{ post.forum.name }} </li>
 			<li class="list-group-item list-group-item-secondary"> <b> Тема: </b>
@@ -58,7 +58,7 @@ href="#"{% macro render_post_tree(post_list, target_post_id, post_status_dict, r
 			<div class="btn-group" role="group">
 				<span class="badge badge-{{ post_status_dict[post.status]['color'] }}"> {{ post_status_dict[post.status]['label'] }} </span>
 				<div class="btn-group" role="group">
-					<a id="status_btn_dropdown" type="button" class="badge badge-{{ post_status_dict[post.status]['color'] }} dropdown-toggle text-white" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" redirect_url="{{ redirect_url }}"> </a>
+					<a id="status_btn_dropdown" type="button" class="badge badge-{{ post_status_dict[post.status]['color'] }} dropdown-toggle text-white" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"> </a>
 					<div class="dropdown-menu" aria-labelledby="status_btn_dropdown">
 						{% for post_status in post_status_dict.keys() %}
 							{% if post_status != post.status %}
