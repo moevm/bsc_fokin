@@ -11,8 +11,8 @@ from app.moodle.models import MoodleCourse, MoodleForum
 
 GEN_AMOUNTS = [10, 50, 100]
 POSTS_PER_DISCUSSION = 5
-COURSE_IDS = []
-USER_TOKENS = []
+COURSE_IDS = [26, 36, 37] # "Тестовый курс для изучения методов поддержки пользователей", "TestCourse1", "TestCourse2"
+USER_TOKENS = ['ad7706307b0948c3679adfbdd1cea498', 'fdf497cb50dd2f836e26f6660354cf7c'] # "Константин Фокин", "Lucifer Morningstar"
 
 
 @moodle.route('/generator/', methods=['GET'])

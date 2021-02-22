@@ -99,19 +99,24 @@ def update_discussions():
 						discussion=discussion,
 						upsert=True,
 						new=True)
-					# update user course grade
-					user_course_grade = moodle_api.get_user_course_grade(post.course.moodle_id, post.user.moodle_id)
-					if user_course_grade.get('exception'):
-						print(user_course_grade.get('exception'))
-					else:
-						post.user.update_course_grade(user_course_grade.get('user_grade')).save()
-						post.course.modify(grade_max=user_course_grade.get('course_grade')) # Плохо обновлять max балл по курсу с каждым постом, нужно переделать!!!
+					post.user.update_course_grade({str(course.moodle_id): 0}).save()
 					post.update_post(post_info).save()
 					discussion_post_list.append(post)
 				discussion.update_discussion(discussion_info).save()
 				discussion.modify(post_list=discussion_post_list)
 				forum_discussion_list.append(discussion)
 			forum.modify(discussion_list=forum_discussion_list)
+	# update users (course grades)
+	user_list = MoodleUser.objects()
+	for user in user_list:
+		user_course_id_list = user.course_grade_dict.keys()
+		for course_id in user_course_id_list:
+			user_course_grade = moodle_api.get_user_course_grade(int(course_id), user.moodle_id)
+			if user_course_grade.get('exception'):
+				print(user_course_grade.get('exception'))
+			else:
+				user.update_course_grade(user_course_grade.get('user_grade')).save()
+				MoodleCourse.objects(moodle_id=int(course_id)).modify(grade_max=user_course_grade.get('course_grade')) # Плохо обновлять max балл по курсу с каждым студентом
 	# end
 	print('Импорт данных занял --- {} --- секунд.'.format((time.time() - start_time)))
 	print('Загружено обсуждений: {}, новых: {}.'.format(MoodleDiscussion.objects().count(), (MoodleDiscussion.objects().count() - old_discussion_amount)))
