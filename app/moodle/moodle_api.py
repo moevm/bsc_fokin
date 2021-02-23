@@ -199,6 +199,27 @@ class MoodleApi:
 
 		return discussion_list
 
+	def get_forum_discussion(self, forum_id, discussion_id):
+		forum_discussions = self.__get_forum_discussions(forum_id)
+		discussion_list = forum_discussions.get('discussions')
+		for discussion in discussion_list:
+			if discussion.get('discussion') == discussion_id:
+				discussion = {
+					'moodle_id': discussion.get('id'),
+					'discussion_id': discussion.get('discussion'),
+					'name': discussion.get('name'),
+					'subject': discussion.get('subject'),
+					'message': discussion.get('message'),
+					'time_created': discussion.get('created'),
+					'user_id': discussion.get('userid'),
+					'user_full_name': discussion.get('userfullname'),
+					'user_picture_url': discussion.get('userpictureurl'),
+					'time_modified': discussion.get('timemodified'),
+					'user_modified': discussion.get('usermodified'),
+					'num_replies': discussion.get('numreplies')}
+
+				return discussion
+
 	def get_discussion_posts(self, discussion_id):
 		discussion_posts = self.__get_discussion_posts(discussion_id)
 		post_list = discussion_posts.get('posts') if discussion_posts.get('posts') else []

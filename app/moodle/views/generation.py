@@ -37,9 +37,10 @@ def generate_moodle_data():
 	for i in range(discussion_amount):
 		forum_id = random.choice(forum_id_list)
 		discussion_id = random.choice(moodle_api_list).add_forum_discussion(forum_id)
+		discussion_info = MoodleApi(current_user.moodle_url, current_user.token).get_forum_discussion(forum_id, discussion_id)
 		discussion_post_amount = POSTS_PER_DISCUSSION if post_amount > POSTS_PER_DISCUSSION else post_amount
 		for j in range(discussion_post_amount):
-			post_id = random.choice(moodle_api_list).add_discussion_post(discussion_id)
+			post_id = random.choice(moodle_api_list).add_discussion_post(discussion_info.get('moodle_id'))
 			post_amount -= 1
 
 	return jsonify(redirect_url=url_for('.show_moodle_gen_page'))

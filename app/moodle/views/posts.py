@@ -28,7 +28,6 @@ def show_all_posts(page=1):
 		current_user.filtration_set.update_filtration_set(filtration_set_info).save()
 	else:
 		return redirect('{}{}'.format(url_for('.show_all_posts', page=page), current_user.filtration_set.get_url()))
-	moodle_api = MoodleApi(current_user.moodle_url, current_user.token)
 	post_list = current_user.filter_and_sort_posts(current_user).paginate(page=page, per_page=POSTS_PER_PAGE)
 
 	return render_template(

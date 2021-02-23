@@ -29,7 +29,6 @@ def show_all_discussions(page=1):
 		current_user.filtration_set.update_filtration_set(filtration_set_info).save()
 	else:
 		return redirect('{}{}'.format(url_for('.show_all_discussions', page=page), current_user.filtration_set.get_url()))
-	moodle_api = MoodleApi(current_user.moodle_url, current_user.token)
 	discussion_list = current_user.filter_and_sort_discussions(current_user).paginate(page=page, per_page=DISCUSSIONS_PER_PAGE)
 
 	return render_template(
@@ -46,7 +45,6 @@ def show_all_discussions(page=1):
 @login_required
 @moodle_login_required
 def show_discussion_tree(discussion_id, post_id):
-	moodle_api = MoodleApi(current_user.moodle_url, current_user.token)
 	discussion = MoodleDiscussion.objects(discussion_id=discussion_id).first()
 	if not discussion:
 		abort(404)

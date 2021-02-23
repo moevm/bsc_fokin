@@ -191,7 +191,7 @@ class MoodlePost(db.Document):
 				new=True)
 			for tag_info in post_info.get('tags')]
 		self.status = self.status if self.status else 'new' # Иначе не работает фильтрация по дефолтному значению
-		self.progress = round((self.user.course_grade_dict[str(self.course.moodle_id)] / self.course.grade_max * 100), 2)
+		self.progress = round((self.user.course_grade_dict[str(self.course.moodle_id)] / self.course.grade_max * 100), 2) if self.course.grade_max else 0
 		if not self.has_parent:
 			self.discussion.modify(
 				discussion_post=self,
@@ -311,7 +311,7 @@ class MoodleCourse(db.Document):
 	enrolled_user_count = db.IntField(default=0)
 	visible = db.BooleanField(default=False)
 	format = db.StringField(default='')
-	grade_max = db.IntField(default=0)
+	grade_max = db.IntField()
 	show_grades = db.BooleanField(default=False)
 	start_date = db.IntField(default=0)
 	cover = db.StringField(default='')
