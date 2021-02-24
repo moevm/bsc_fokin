@@ -17,7 +17,7 @@ def index():
 @main.route('/get_date_interval/', methods=['POST'])
 def get_date_interval():
 	day_count = request.json.get('day_count')
-	date_from = (date.today() + timedelta(int(day_count) - 1)).isoformat()
+	date_from = (date.today() - timedelta(int(day_count))).isoformat()
 	date_to = (date.today() + timedelta(1)).isoformat()
 
 	return jsonify(date_from=date_from, date_to=date_to)
