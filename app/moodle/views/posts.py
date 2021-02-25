@@ -1,3 +1,4 @@
+import time
 from flask import render_template, request, redirect, url_for, abort, jsonify
 from flask_login import login_user, logout_user, login_required, current_user
 from app.main import main
@@ -28,7 +29,13 @@ def show_all_posts(page=1):
 		current_user.filtration_set.update_filtration_set(filtration_set_info).save()
 	else:
 		return redirect('{}{}'.format(url_for('.show_all_posts', page=page), current_user.filtration_set.get_url()))
+
+	start_time = time.time()
+	# start
 	post_list = current_user.filter_and_sort_posts(current_user).paginate(page=page, per_page=POSTS_PER_PAGE)
+	# end
+	print('Поиск занял --- {} --- секунд.'.format((time.time() - start_time)))
+	print('Найдено постов: {} из {}.'.format(post_list.total, MoodlePost.objects().count()))
 
 	return render_template(
 		"moodle/posts.html",

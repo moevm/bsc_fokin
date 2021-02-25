@@ -191,7 +191,7 @@ class MoodlePost(db.Document):
 				new=True)
 			for tag_info in post_info.get('tags')]
 		self.status = self.status if self.status else 'new' # Иначе не работает фильтрация по дефолтному значению
-		self.progress = round((self.user.course_grade_dict[str(self.course.moodle_id)] / self.course.grade_max * 100), 2) if self.course.grade_max else 0
+		self.progress = 0
 		if not self.has_parent:
 			self.discussion.modify(
 				discussion_post=self,
@@ -231,6 +231,12 @@ class MoodlePost(db.Document):
 
 		return self
 
+	def update_post_progress(self):
+		self.progress = round((self.user.course_grade_dict[str(self.course.moodle_id)] / self.course.grade_max * 100), 2) if self.course.grade_max else 0
+		if not self.has_parent:
+			self.discussion.modify(progress=self.progress)
+
+		return self
 
 class MoodleDiscussion(db.Document):
 	serial_id = db.SequenceField()
@@ -400,14 +406,16 @@ class MoodleTeacher(BaseTeacher):
 		discussion_list = discussion_list.filter(Q(time_created__gte=filtration_set.date_from) & Q(time_created__lte=filtration_set.date_to))
 		# 2. Ответы
 		discussion_list = discussion_list.filter(Q(num_replies__gte=filtration_set.replies_from) & Q(num_replies__lte=filtration_set.replies_to))
-		# 3. Прогресс
-		discussion_list = discussion_list.filter(Q(progress__gte=filtration_set.progress_from) & Q(progress__lte=filtration_set.progress_to))
 		# 5. Теги
 		discussion_list = discussion_list.filter(tag_list__in=[tag for tag in filtration_set.tag_list]) if filtration_set.tag_list else discussion_list
 		# 6. Автор
 		discussion_list = discussion_list.filter(user=filtration_set.author) if filtration_set.author else discussion_list
 		# 7. Статус
 		discussion_list = discussion_list.filter(status=filtration_set.post_status) if filtration_set.post_status != 'all' else discussion_list
+		# 3. Прогресс
+		for discussion in discussion_list:
+			discussion.discussion_post.update_post_progress().save()
+		discussion_list = discussion_list.filter(Q(progress__gte=filtration_set.progress_from) & Q(progress__lte=filtration_set.progress_to))
 		# sort
 		discussion_list = discussion_list.order_by(*filtration_set.get_sort_args_list())
 
@@ -422,14 +430,16 @@ class MoodleTeacher(BaseTeacher):
 		post_list = post_list.filter(Q(time_created__gte=filtration_set.date_from) & Q(time_created__lte=filtration_set.date_to))
 		# 2. Ответы
 		post_list = post_list.filter(Q(num_replies__gte=filtration_set.replies_from) & Q(num_replies__lte=filtration_set.replies_to))
-		# 3. Прогресс
-		post_list = post_list.filter(Q(progress__gte=filtration_set.progress_from) & Q(progress__lte=filtration_set.progress_to))
 		# 5. Теги
 		post_list = post_list.filter(tag_list__in=[tag for tag in filtration_set.tag_list]) if filtration_set.tag_list else post_list
 		# 6. Автор
 		post_list = post_list.filter(user=filtration_set.author) if filtration_set.author else post_list
 		# 7. Статус
 		post_list = post_list.filter(status=filtration_set.post_status) if filtration_set.post_status != 'all' else post_list
+		# 3. Прогресс
+		for post in post_list:
+			post.update_post_progress().save()
+		post_list = post_list.filter(Q(progress__gte=filtration_set.progress_from) & Q(progress__lte=filtration_set.progress_to))
 		# sort
 		post_list = post_list.order_by(*filtration_set.get_sort_args_list())
 
