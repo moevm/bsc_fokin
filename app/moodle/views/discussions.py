@@ -1,11 +1,10 @@
 import time
 from flask import render_template, request, redirect, url_for, abort, jsonify
 from flask_login import login_user, logout_user, login_required, current_user
-from app.main import main
 from app.moodle import moodle
 from app.moodle.views.main import moodle_login_required
 from app.moodle.moodle_api import MoodleApi
-from app.moodle.models import MoodleTeacher, MoodleUser, MoodleCourse, MoodleForum, MoodleDiscussion, MoodlePost, MoodleTag, FiltrationSet
+from app.moodle.models import MoodleTeacher, MoodleUser, MoodleCourse, MoodleForum, MoodleDiscussion, MoodlePost, MoodleTag, MoodleFiltrationSet
 
 DISCUSSIONS_PER_PAGE = 5
 
@@ -36,7 +35,7 @@ def show_all_discussions(page=1):
 		discussion_list=discussion_list,
 		tag_list=MoodleTag.objects(),
 		order_select_list=ORDER_PARAMS,
-		filtration_set_list=FiltrationSet.objects(),
+		filtration_set_list=MoodleFiltrationSet.objects(),
 		post_status_dict=POST_STATUSES,
 		redirect_url='moodle.show_all_discussions')
 

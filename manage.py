@@ -5,10 +5,12 @@ from app.create_app import app
 from app.main import main as main_blueprint
 from app.stepic import stepic as stepic_blueprint
 from app.moodle import moodle as moodle_blueprint
+from app.filtration import filtration as filtration_blueprint
 
 
 app.register_blueprint(stepic_blueprint, url_prefix='/stepic')
 app.register_blueprint(moodle_blueprint, url_prefix='/moodle')
+app.register_blueprint(filtration_blueprint, url_prefix='/filtration')
 app.register_blueprint(main_blueprint)
 manager = Manager(app)
 

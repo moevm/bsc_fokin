@@ -1,25 +1,14 @@
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from mongoengine.queryset.visitor import Q
 from app.create_app import db
 from app.main.models import BaseTeacher
+from app.filtration.models import FiltrationSet
 
 
-class FiltrationSet(db.Document):
-	serial_id = db.SequenceField()
-	title = db.StringField(default='', unique=True)
-	date_from = db.IntField(default=0)
-	date_to = db.IntField(default=0)
-	date_order = db.StringField(default='-')
-	replies_from = db.IntField(default=0)
-	replies_to = db.IntField(default=10)
-	replies_order = db.StringField(default='-')
-	progress_from = db.IntField(default=0)
-	progress_to = db.IntField(default=100)
-	progress_order = db.StringField(default='-')
+class MoodleFiltrationSet(FiltrationSet):
 	course_list = db.ListField(db.ReferenceField('MoodleCourse'), default=[])
 	tag_list = db.ListField(db.ReferenceField('MoodleTag'), default=[])
 	author = db.ReferenceField('MoodleUser')
-	post_status = db.StringField(default='all')
 
 	def get_info(self):
 		return self.to_json()
@@ -57,29 +46,50 @@ class FiltrationSet(db.Document):
 		self.author = MoodleUser.objects(serial_id=filtration_set_info.get('author_id')).first() if filtration_set_info.get('author_id') else None
 		self.post_status = filtration_set_info.get('post_status')
 
-		print('Update filtration set #{}'.format(self.serial_id))
+		print('Update moodle filtration set #{}'.format(self.serial_id))
 
 		return self
 
-	def copy_filtration_set(self, old_filtration_set):
-		self.date_from = old_filtration_set.date_from
-		self.date_to = old_filtration_set.date_to
-		self.date_order = old_filtration_set.date_order
-		self.replies_from = old_filtration_set.replies_from
-		self.replies_to = old_filtration_set.replies_to
-		self.replies_order = old_filtration_set.replies_order
-		self.progress_from = old_filtration_set.progress_from
-		self.progress_to = old_filtration_set.progress_to
-		self.progress_order = old_filtration_set.progress_order
-		self.course_list = old_filtration_set.course_list
-		self.tag_list = old_filtration_set.tag_list
-		self.author = old_filtration_set.author
-		self.post_status = old_filtration_set.post_status
+	# copy filtration_set_2 data to filtration_set_1
+	def copy_filtration_set(self, filtration_set_1, filtration_set_2):
+		filtration_set_1.date_from = filtration_set_2.date_from
+		filtration_set_1.date_to = filtration_set_2.date_to
+		filtration_set_1.date_order = filtration_set_2.date_order
+		filtration_set_1.replies_from = filtration_set_2.replies_from
+		filtration_set_1.replies_to = filtration_set_2.replies_to
+		filtration_set_1.replies_order = filtration_set_2.replies_order
+		filtration_set_1.progress_from = filtration_set_2.progress_from
+		filtration_set_1.progress_to = filtration_set_2.progress_to
+		filtration_set_1.progress_order = filtration_set_2.progress_order
+		filtration_set_1.course_list = filtration_set_2.course_list
+		filtration_set_1.tag_list = filtration_set_2.tag_list
+		filtration_set_1.author = filtration_set_2.author
+		filtration_set_1.post_status = filtration_set_2.post_status
 
-		print('Copy filtration_set #{} <-- #{}'.format(self.serial_id, old_filtration_set.serial_id))
+		print('Copy moodle filtration_set #{} <-- #{}'.format(filtration_set_1.serial_id, filtration_set_2.serial_id))
+
+		return filtration_set_1
+
+	# импорт фильтра для Moodle
+	def import_filtration_set(self, filtration_set_id):
+		old_filtration_set = MoodleFiltrationSet(serial_id=filtration_set_id).first()
+		self.copy_filtration_set(self, old_filtration_set).save()
+
+		print('Import moodle filtration_set #{}'.format(old_filtration_set.serial_id))
 
 		return self
 
+	# экспорт фильтра для Moodle
+	def export_filtration_set(self, title):
+		new_filtration_set = MoodleFiltrationSet(title=title).save()
+		self.copy_filtration_set(new_filtration_set, self).save()
+
+
+		print('Export moodle filtration_set #{}'.format(new_filtration_set.serial_id))
+
+		return self
+
+	# url параметры
 	def get_url(self):
 		url = '?{}&{}&{}&{}&{}&{}&{}'.format(
 			self.get_date_args_url(),
@@ -92,49 +102,17 @@ class FiltrationSet(db.Document):
 
 		return url
 
-	def get_date_args_url(self):
-		date_args_url = 'date[from]={}&date[to]={}&date[order]={}'.format(
-			date.fromtimestamp(self.date_from).isoformat(),
-			date.fromtimestamp(self.date_to).isoformat(),
-			self.date_order)
-
-		return date_args_url
-
-	def get_replies_args_url(self):
-		replies_args_url = 'replies[from]={}&replies[to]={}&replies[order]={}'.format(
-			self.replies_from,
-			self.replies_to,
-			self.replies_order)
-
-		return replies_args_url
-
-	def get_progress_args_url(self):
-		progress_args_url = 'progress[from]={}&progress[to]={}&progress[order]={}'.format(
-			self.progress_from,
-			self.progress_to,
-			self.progress_order)
-
-		return progress_args_url
-
+	# url параметры поля "Курсы"
 	def get_courses_args_url(self):
 		return '&'.join('course_ids[]={}'.format(course.moodle_id) for course in self.course_list)
 
+	# url параметры поля "Теги"
 	def get_tags_args_url(self):
 		return '&'.join('tag_ids[]={}'.format(tag.moodle_id) for tag in self.tag_list)
 
+	# url параметры поля "Автор"
 	def get_author_args_url(self):
 		return 'author_id={}'.format(self.author.serial_id if self.author else 0)
-
-	def get_post_status_args_url(self):
-		return 'post_status={}'.format(self.post_status)
-
-	def get_sort_args_list(self):
-		sort_args_list = [
-			'{}{}'.format(self.date_order, 'time_created'),
-			'{}{}'.format(self.replies_order, 'num_replies'),
-			'{}{}'.format(self.progress_order, 'progress')]
-
-		return sort_args_list
 
 
 class MoodleTag(db.Document):
@@ -371,7 +349,7 @@ class MoodleTeacher(BaseTeacher):
 	full_name = db.StringField(default='')
 	user_picture_url = db.StringField(default='')
 	course_list = db.ListField(db.ReferenceField('MoodleCourse'), default=[])
-	filtration_set = db.ReferenceField('FiltrationSet')
+	filtration_set = db.ReferenceField('MoodleFiltrationSet')
 
 	def get_info(self):
 		return self.to_json()
@@ -381,8 +359,10 @@ class MoodleTeacher(BaseTeacher):
 		self.full_name = teacher_info.get('fullname')
 		self.user_picture_url = teacher_info.get('userpictureurl')
 		filtration_set_title = '{} (по умолчанию)'.format(teacher_info.get('username'))
-		self.filtration_set = FiltrationSet.objects(title=filtration_set_title).modify(
+		self.filtration_set = MoodleFiltrationSet.objects(title=filtration_set_title).modify(
 				title=filtration_set_title,
+				date_from=datetime.fromisoformat((date.today() - timedelta(30)).isoformat()).timestamp(),
+				date_to=datetime.fromisoformat((date.today() + timedelta(1)).isoformat()).timestamp(),
 				upsert=True,
 				new=True)
 
@@ -401,7 +381,7 @@ class MoodleTeacher(BaseTeacher):
 		# filter
 		filtration_set = current_user.filtration_set
 		# 4. Курсы
-		discussion_list = MoodleDiscussion.objects(course__in=filtration_set.course_list)
+		discussion_list = MoodleDiscussion.objects(course__in=filtration_set.course_list) if filtration_set.course_list else MoodleDiscussion.objects()
 		# 1. Дата
 		discussion_list = discussion_list.filter(Q(time_created__gte=filtration_set.date_from) & Q(time_created__lte=filtration_set.date_to))
 		# 2. Ответы
@@ -425,7 +405,7 @@ class MoodleTeacher(BaseTeacher):
 		# filter
 		filtration_set = current_user.filtration_set
 		# 4. Курсы
-		post_list = MoodlePost.objects(course__in=filtration_set.course_list)
+		post_list = MoodlePost.objects(course__in=filtration_set.course_list) if filtration_set.course_list else MoodlePost.objects()
 		# 1. Дата
 		post_list = post_list.filter(Q(time_created__gte=filtration_set.date_from) & Q(time_created__lte=filtration_set.date_to))
 		# 2. Ответы
