@@ -19,7 +19,7 @@ def moodle_login_required(f):
 @moodle.route('/login/', methods=['GET', 'POST'])
 def login():
 	if current_user.is_authenticated and current_user.is_moodle_teacher():
-		return redirect(url_for('.show_all_courses'))
+		return redirect(url_for('.show_all_discussions'))
 
 	return redirect(url_for('moodle.authorization'), code=308)
 

@@ -52,38 +52,3 @@ $('.course_filtration').click(function(event) {
 	$('#course_id_list').val([$(this).attr('course_id')]);
 	$('#search_btn').click();
 });
-
-// ******************** Поле "Статус" ********************
-// Выбор статуса
-$('.post_status').click(function(event) {
-	event.preventDefault();
-	$('#remove_status').attr('post_status', $(this).attr('post_status'));
-	$('#search_btn').click();
-});
-
-// Удаление статуса
-$('#remove_status').click(function(event) {
-	event.preventDefault();
-	$('#remove_status').attr('post_status', 'all');
-	$('#search_btn').click();
-});
-
-// Смена статуса
-$('.update_post_status').click(function(event) {
-	event.preventDefault();
-	$.ajax({
-		type: 'POST',
-		url: $(this).attr('href'),
-		data: JSON.stringify({
-			post_status: $(this).attr('post_status'),
-		}),
-		contentType: "application/json",
-		dataType: "json",
-		success: function(data) {
-			location.href = data.redirect_url;
-		},
-		error: function() {
-			location.reload();
-		}
-	});
-});

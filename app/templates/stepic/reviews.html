@@ -1,5 +1,9 @@
 {% extends "stepic/base.html" %}
-{% import "stepic/macros.html" as macros %}
+{% import "main/macro_pagination.html" as macro_pagination %}
+{% import "stepic/macro_filtration.html" as macro_filtration %}
+{% import "stepic/macro_reviews.html" as macro_reviews %}
+
+{% block title %} - отзывы {% endblock %}
 
 {% block extra_css %}
 
@@ -10,22 +14,48 @@
 {% block content %}
 
 <h1 style="text-align: center;">Отзывы</h1>
+
+{{ macro_filtration.render_filtration_block(current_user, order_select_list, review_list.page, filtration_set_list, redirect_url) }}
+
+<br>
+
+<div class="row">
+	<div class="col-sm-8">
+		<h2 style="text-align: center;">
+			Список отзывов
+			<div class="btn-group" role="group">
+				{% if current_user.filtration_set.author %}
+					<a href="#" id="remove_author" author_id="{{ current_user.filtration_set.author.serial_id }}" style="display: none"> </a>
+				{% else %}
+					<a href="#" id="remove_author" author_id=0 style="display: none"> </a>
+				{% endif %}
+			</div>
+			<div class="btn-group" role="group">
+				<a href="#" id="remove_status" class="badge badge-danger" comment_status="{{ current_user.filtration_set.comment_status }}"	style="display: none"> </a>
+			</div>
+		</h2>
+	</div>
+	<div class="col-sm-4" style="text-align: center;">
+		<button class="btn btn-warning update_btn" type="button" href="{{ url_for('stepic.update_reviews') }}">
+			<span class="spinner-border spinner-border-sm update_btn_spinner" role="status" aria-hidden="true" style="display: none"> </span>
+			Обновить
+		</button>
+	</div>
+</div>
+
+{{ macro_reviews.render_review_list(review_list, redirect_url) }}
+
 <div class="jumbotron rounded bg-light">
-  {{ macros.render_review_list_filter(current_user, sort_select_list, order_select_list) }}
+	{{ macro_pagination.render_navigation(review_list, redirect_url) }}
 </div>
-<div class="review-list">
-  <div class="row">
-    <div class="col-8">
-      <h2 style="text-align: center;">Список отзывов</h2>
-    </div>
-    <div class="col-4" style="text-align: center;">
-      <a class="btn btn-warning" href="{{ url_for('stepic.update_reviews') }}">Обновить</a>
-    </div>
-  </div>
-  {{ macros.render_review_list(review_list) }}
-</div>
-<div class="jumbotron rounded bg-light">
-  {{ macros.render_navigation(review_list, 'stepic.show_all_reviews') }}
-</div>
+
+{% endblock %}
+
+{% block extra_javascript %}
+
+<script src="{{ url_for('static', filename = 'js/spinner.js') }}">	</script>
+<script src="{{ url_for('static', filename = 'js/slider.js') }}">	</script>
+<script src="{{ url_for('static', filename = 'js/filtration.js') }}">	</script>
+<script src="{{ url_for('static', filename = 'js/stepic_filtration.js') }}">	</script>
 
 {% endblock %}

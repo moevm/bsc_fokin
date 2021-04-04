@@ -1,3 +1,20 @@
+// слайдер для репутации
+$(function() {
+	$("#reputation_slider-range").slider({
+		range: true,
+		min: 0,
+		max: 100000,
+		values: [$('#reputation_range').attr('reputation_from'), $('#reputation_range').attr('reputation_to')],
+		slide: function(event, ui) {
+			$("#reputation_range").text(ui.values[0] + " - " + ui.values[1]);
+		}
+	});
+	$("#reputation_range").text(
+		$("#reputation_slider-range").slider("values", 0) +
+		" - " +
+		$("#reputation_slider-range").slider("values", 1));
+	});
+
 // нажатие на кнопку "Поиск"
 $('#search_btn').click(function(event) {
 	event.preventDefault();
@@ -14,10 +31,12 @@ $('#search_btn').click(function(event) {
 			progress_from: $("#progress_slider-range").slider('values', 0),
 			progress_to: $("#progress_slider-range").slider('values', 1),
 			progress_order: $('#progress_order').val(),
+			reputation_from: $("#reputation_slider-range").slider('values', 0),
+			reputation_to: $("#reputation_slider-range").slider('values', 1),
+			reputation_order: $('#reputation_order').val(),
 			course_id_list: $('#course_id_list').val(),
-			tag_id_list: $('#tag_id_list').val(),
 			author_id: $('#remove_author').attr('author_id'),
-			post_status: $('#remove_status').attr('post_status')
+			comment_status: $('#remove_status').attr('comment_status')
 		}),
 		contentType: "application/json",
 		dataType: "json",
@@ -43,10 +62,12 @@ $('#export_btn').click(function(event) {
 			progress_from: $("#progress_slider-range").slider('values', 0),
 			progress_to: $("#progress_slider-range").slider('values', 1),
 			progress_order: $('#progress_order').val(),
+			reputation_from: $("#reputation_slider-range").slider('values', 0),
+			reputation_to: $("#reputation_slider-range").slider('values', 1),
+			reputation_order: $('#reputation_order').val(),
 			course_id_list: $('#course_id_list').val(),
-			tag_id_list: $('#tag_id_list').val(),
 			author_id: $('#remove_author').attr('author_id'),
-			post_status: $('#remove_status').attr('post_status'),
+			comment_status: $('#remove_status').attr('comment_status'),
 			title: $('#filtration_set_title').val(),
 		}),
 		contentType: "application/json",
@@ -57,37 +78,29 @@ $('#export_btn').click(function(event) {
 	});
 });
 
-// ******************** Поле "Теги" ********************
-// Выбор тега
-$('.tag_filtration').click(function(event) {
-	event.preventDefault();
-	$('#tag_id_list').val([$(this).attr('tag_id')]);
-	$('#search_btn').click();
-});
-
 // ******************** Поле "Статус" ********************
 // Выбор статуса
-$('.post_status').click(function(event) {
+$('.comment_status').click(function(event) {
 	event.preventDefault();
-	$('#remove_status').attr('post_status', $(this).attr('post_status'));
+	$('#remove_status').attr('comment_status', $(this).attr('comment_status'));
 	$('#search_btn').click();
 });
 
 // Удаление статуса
 $('#remove_status').click(function(event) {
 	event.preventDefault();
-	$('#remove_status').attr('post_status', 'all');
+	$('#remove_status').attr('comment_status', 'all');
 	$('#search_btn').click();
 });
 
 // Смена статуса
-$('.update_post_status').click(function(event) {
+$('.update_comment_status').click(function(event) {
 	event.preventDefault();
 	$.ajax({
 		type: 'POST',
 		url: $(this).attr('href'),
 		data: JSON.stringify({
-			post_status: $(this).attr('post_status'),
+			comment_status: $(this).attr('comment_status'),
 		}),
 		contentType: "application/json",
 		dataType: "json",

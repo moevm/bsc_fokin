@@ -32,7 +32,7 @@ def show_all_posts(page=1):
 
 	start_time = time.time()
 	# start
-	post_list = current_user.filter_and_sort_posts(current_user).paginate(page=page, per_page=POSTS_PER_PAGE)
+	post_list = current_user.filter_and_sort_posts().paginate(page=page, per_page=POSTS_PER_PAGE)
 	# end
 	print('Поиск занял --- {} --- секунд.'.format((time.time() - start_time)))
 	print('Найдено постов: {} из {}.'.format(post_list.total, MoodlePost.objects().count()))

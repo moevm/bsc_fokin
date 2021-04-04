@@ -1,11 +1,13 @@
 {% extends "stepic/base.html" %}
 
+{% block title %} - курсы {% endblock %}
+
 {% block content %}
 
-<h1 style="text-align: center;">Курсы</h1>
+<h1 style="text-align: center;"> Курсы </h1>
 <div class="row">
 	<div class="col-8">
-		<h2 style="text-align: center;">Список курсов</h2>
+		<h2 style="text-align: center;"> Список курсов </h2>
 		{% for course in course_list %}
 		<div class="card mb-3">
 			<div class="row">
@@ -14,8 +16,8 @@
 				</div>
 				<div class="col-8">
 					<div class="card-body">
-						<h5 class="card-title">{{ course.title }}</h5>
-						<p class="card-text"><small class="text-muted">{{ course.stepic_id }}</small></p>
+						<h5 class="card-title"> {{ course.title }} </h5>
+						<p class="card-text"> <small class="text-muted"> {{ course.stepic_id }} </small> </p>
 					</div>
 				</div>
 				<div class="col-2">
@@ -26,8 +28,17 @@
 		{% endfor %}
 	</div>
 	<div class="col-4" style="text-align: center;">
-		<a class="btn btn-lg btn-warning mr-2" href="{{ url_for('stepic.update_courses') }}">Обновить</a>
+		<button class="btn btn-lg btn-warning update_btn" type="button" href="{{ url_for('stepic.update_courses') }}">
+			<span class="spinner-border spinner-border-sm update_btn_spinner" role="status" aria-hidden="true" style="display: none"> </span>
+			Обновить
+		</button>
 	</div>
 </div>
+
+{% endblock %}
+
+{% block extra_javascript %}
+
+<script src="{{ url_for('static', filename = 'js/spinner.js') }}">	</script>
 
 {% endblock %}

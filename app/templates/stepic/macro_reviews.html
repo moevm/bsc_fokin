@@ -1,0 +1,60 @@
+{% macro render_review_list(review_list, redirect_url) %}
+<div class="row">
+	<div class="col-sm-8">
+		{% for review in review_list.items %}
+
+		<div class="card-group">
+			<!-- Первая половина -->
+			<div class="card text-center border-secondary">
+				<img src="{{ review.user.avatar_url }}" class="card-img-top" alt="...">
+				<div class="card-body">
+					<h5 class="card-title"> {{ review.user.full_name }} </h5>
+				</div>
+				<ul class="list-group list-group-flush">
+					<li class="list-group-item">
+						<b> Прогресс курса: </b>
+						<div class="progress">
+							<div class="progress-bar" role="progressbar"
+								style="width: {{ "%.2f" % (review.user.courses[review.course.stepic_id | string].score / review.course.score * 100) }}%"
+								aria-valuenow="{{ "%.2f" % (review.user.courses[review.course.stepic_id | string].score / review.course.score * 100) }}"
+								aria-valuemin="0"
+								aria-valuemax="{{ review.course.score }}">
+								{{ "%.2f" % (review.user.courses[review.course.stepic_id | string].score / review.course.score * 100) }}%
+							</div>
+						</div>
+					</li>
+					<li class="list-group-item">
+						Оценка:
+						{% for i in range(review.score) %}
+							<i class="fa fa-star"></i>
+						{% endfor %}
+					</li>
+					<li class="list-group-item"> Репутация: {{ review.user.reputation }}</li>
+				</ul>
+				<div class="card-footer">
+					<small class="text-muted"> {{ review.create_date | date_from_timestamp('%d.%m.%Y %H:%M') }} </small>
+				</div>
+			</div>
+			<!-- Вторая половина -->
+			<div class="card border-secondary" style="flex-grow: 3">
+				<ul class="list-group list-group-flush">
+					<li class="list-group-item list-group-item-secondary">
+						<b> Курс: </b>
+						<a href="#" class="badge badge-primary course_filtration" course_id="{{ review.course.serial_id }}"> {{ review.course.title }} </a>
+					</li>
+				</ul>
+				<div class="card-body">
+					<p class="card-text"> {{ review.text | safe }} </p>
+				</div>
+				<div class="card-footer text-right">
+					<a href="{{ url_for('stepic.show_review', step_id=review.step_id, review_id=review.stepic_id) }}" class="badge badge-success"> Ссылка на отзыв </a>
+				</div>
+			</div>
+		</div>
+
+		<br>
+
+		{% endfor %}
+	</div>
+</div>
+{% endmacro %}

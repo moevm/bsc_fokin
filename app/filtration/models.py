@@ -18,8 +18,6 @@ class FiltrationSet(db.Document):
 	progress_from = db.IntField(default=0)
 	progress_to = db.IntField(default=100)
 	progress_order = db.StringField(default='-')
-	# поле "Статус" комментария / поста
-	post_status = db.StringField(default='all')
 	# разрешено наследование
 	meta = {'allow_inheritance': True}
 
@@ -52,16 +50,3 @@ class FiltrationSet(db.Document):
 			self.progress_order)
 
 		return progress_args_url
-
-	# url параметры поля "Статус"
-	def get_post_status_args_url(self):
-		return 'post_status={}'.format(self.post_status)
-
-	# параметры сортировки по полям: "Дата", "Ответы", "Прогресс"
-	def get_sort_args_list(self):
-		sort_args_list = [
-			'{}{}'.format(self.date_order, 'time_created'),
-			'{}{}'.format(self.replies_order, 'num_replies'),
-			'{}{}'.format(self.progress_order, 'progress')]
-
-		return sort_args_list

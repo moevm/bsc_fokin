@@ -28,7 +28,8 @@ def show_all_discussions(page=1):
 		current_user.filtration_set.update_filtration_set(filtration_set_info).save()
 	else:
 		return redirect('{}{}'.format(url_for('.show_all_discussions', page=page), current_user.filtration_set.get_url()))
-	discussion_list = current_user.filter_and_sort_discussions(current_user).paginate(page=page, per_page=DISCUSSIONS_PER_PAGE)
+
+	discussion_list = current_user.filter_and_sort_discussions().paginate(page=page, per_page=DISCUSSIONS_PER_PAGE)
 
 	return render_template(
 		"moodle/discussions.html",

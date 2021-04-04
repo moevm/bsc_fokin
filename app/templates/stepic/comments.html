@@ -1,5 +1,9 @@
 {% extends "stepic/base.html" %}
-{% import "stepic/macros.html" as macros %}
+{% import "main/macro_pagination.html" as macro_pagination %}
+{% import "stepic/macro_filtration.html" as macro_filtration %}
+{% import "stepic/macro_comments.html" as macro_comments %}
+
+{% block title %} - комментария {% endblock %}
 
 {% block extra_css %}
 
@@ -9,23 +13,57 @@
 
 {% block content %}
 
-<h1 style="text-align: center;">Комментарии</h1>
-<div class="jumbotron rounded bg-light">
-	{{ macros.render_comment_list_filter(current_user, sort_select_list, order_select_list) }}
-</div>
-<div class="comment-list">
-	<div class="row">
-		<div class="col-8">
-			<h2 style="text-align: center;">Список комментариев</h2>
-		</div>
-		<div class="col-4" style="text-align: center;">
-			<a class="btn btn-warning" href="{{ url_for('stepic.update_comments') }}">Обновить</a>
-		</div>
+<h1 style="text-align: center;"> Комментарии </h1>
+
+{{ macro_filtration.render_filtration_block(current_user, order_select_list, comment_list.page, filtration_set_list, redirect_url) }}
+
+<br>
+
+<div class="row">
+	<div class="col-sm-8">
+		<h2 style="text-align: center;">
+			Список комментариев
+			<div class="btn-group" role="group">
+				{% if current_user.filtration_set.author %}
+					<span href="#" class="badge badge-primary"> {{ current_user.filtration_set.author.full_name }}
+						<a href="#" id="remove_author" class="badge badge-danger" author_id="{{ current_user.filtration_set.author.serial_id }}"> X </a>
+					</span>
+				{% else %}
+					<a href="#" id="remove_author" class="badge badge-danger" author_id=0 style="display: none"> </a>
+				{% endif %}
+			</div>
+			<div class="btn-group" role="group">
+				{% if current_user.filtration_set.comment_status != 'all' %}
+					<span href="#" class="badge badge-{{ comment_status_dict[current_user.filtration_set.comment_status]['color'] }}"> {{ comment_status_dict[current_user.filtration_set.comment_status]['label'] }}
+						<a href="#" id="remove_status" class="badge badge-danger" comment_status="{{ current_user.filtration_set.comment_status }}"> X </a>
+					</span>
+				{% else %}
+					<a href="#" id="remove_status" class="badge badge-danger" comment_status="all"	style="display: none"> </a>
+				{% endif %}
+			</div>
+		</h2>
 	</div>
-	{{ macros.render_comment_list(comment_list) }}
+	<div class="col-sm-4" style="text-align: center;">
+		<button class="btn btn-warning update_btn" type="button" href="{{ url_for('stepic.update_comments') }}">
+			<span class="spinner-border spinner-border-sm update_btn_spinner" role="status" aria-hidden="true" style="display: none"> </span>
+			Обновить
+		</button>
+	</div>
 </div>
+
+{{ macro_comments.render_comment_list(comment_list, comment_status_dict, redirect_url) }}
+
 <div class="jumbotron rounded bg-light">
-	{{ macros.render_navigation(comment_list, 'stepic.show_all_comments') }}
+	{{ macro_pagination.render_navigation(comment_list, redirect_url) }}
 </div>
+
+{% endblock %}
+
+{% block extra_javascript %}
+
+<script src="{{ url_for('static', filename = 'js/spinner.js') }}">	</script>
+<script src="{{ url_for('static', filename = 'js/slider.js') }}">	</script>
+<script src="{{ url_for('static', filename = 'js/filtration.js') }}">	</script>
+<script src="{{ url_for('static', filename = 'js/stepic_filtration.js') }}">	</script>
 
 {% endblock %}

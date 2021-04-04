@@ -9,6 +9,8 @@ class MoodleFiltrationSet(FiltrationSet):
 	course_list = db.ListField(db.ReferenceField('MoodleCourse'), default=[])
 	tag_list = db.ListField(db.ReferenceField('MoodleTag'), default=[])
 	author = db.ReferenceField('MoodleUser')
+	# поле "Статус" поста
+	post_status = db.StringField(default='all')
 
 	def get_info(self):
 		return self.to_json()
@@ -72,7 +74,7 @@ class MoodleFiltrationSet(FiltrationSet):
 
 	# импорт фильтра для Moodle
 	def import_filtration_set(self, filtration_set_id):
-		old_filtration_set = MoodleFiltrationSet(serial_id=filtration_set_id).first()
+		old_filtration_set = MoodleFiltrationSet.objects(serial_id=filtration_set_id).first()
 		self.copy_filtration_set(self, old_filtration_set).save()
 
 		print('Import moodle filtration_set #{}'.format(old_filtration_set.serial_id))
@@ -113,6 +115,19 @@ class MoodleFiltrationSet(FiltrationSet):
 	# url параметры поля "Автор"
 	def get_author_args_url(self):
 		return 'author_id={}'.format(self.author.serial_id if self.author else 0)
+
+	# url параметры поля "Статус"
+	def get_post_status_args_url(self):
+		return 'post_status={}'.format(self.post_status)
+
+	# параметры сортировки по полям: "Дата", "Ответы", "Прогресс"
+	def get_sort_args_list(self):
+		sort_args_list = [
+			'{}{}'.format(self.date_order, 'time_created'),
+			'{}{}'.format(self.replies_order, 'num_replies'),
+			'{}{}'.format(self.progress_order, 'progress')]
+
+		return sort_args_list
 
 
 class MoodleTag(db.Document):
@@ -370,16 +385,9 @@ class MoodleTeacher(BaseTeacher):
 
 		return self
 
-	def update_user_courses(self, user_course_list):
-		self.course_list = user_course_list
-
-		print('Update moodle teacher courses #{}'.format(self.serial_id))
-
-		return self
-
-	def filter_and_sort_discussions(self, current_user):
+	def filter_and_sort_discussions(self):
 		# filter
-		filtration_set = current_user.filtration_set
+		filtration_set = self.filtration_set
 		# 4. Курсы
 		discussion_list = MoodleDiscussion.objects(course__in=filtration_set.course_list) if filtration_set.course_list else MoodleDiscussion.objects()
 		# 1. Дата
@@ -401,9 +409,9 @@ class MoodleTeacher(BaseTeacher):
 
 		return discussion_list
 
-	def filter_and_sort_posts(self, current_user):
+	def filter_and_sort_posts(self):
 		# filter
-		filtration_set = current_user.filtration_set
+		filtration_set = self.filtration_set
 		# 4. Курсы
 		post_list = MoodlePost.objects(course__in=filtration_set.course_list) if filtration_set.course_list else MoodlePost.objects()
 		# 1. Дата
