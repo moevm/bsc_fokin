@@ -29,7 +29,12 @@ def show_all_comments(page=1):
 	else:
 		return redirect('{}{}'.format(url_for('.show_all_comments', page=page), current_user.filtration_set.get_url()))
 
+	start_time = time.time()
+	# start
 	comment_list = current_user.filter_and_sort_comments().paginate(page=page, per_page=COMMENTS_PER_PAGE)
+	# end
+	print('Поиск занял --- {} --- секунд.'.format((time.time() - start_time)))
+	print('Найдено комментариев: {} из {}.'.format(comment_list.total, StepicComment.objects().count()))
 
 	return render_template(
 		"stepic/comments.html",

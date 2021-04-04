@@ -236,6 +236,14 @@ class StepicComment(db.Document):
 
 		return self
 
+	def update_comment_progress(self):
+		self.user_reputation = self.user.reputation
+		self.progress = round((self.user.courses[str(self.course.stepic_id)].score / self.course.score * 100), 2) if self.course.score else 0
+		if not self.has_parent:
+			self.discussion.modify(progress=self.progress)
+
+		return self
+
 
 class StepicUserStep(db.EmbeddedDocument):
 	score = db.IntField(default=0)
@@ -328,16 +336,16 @@ class StepicUser(db.Document):
 		# update user course grades
 		self.__update_course_grades()
 		# update reputation, progress in users comments and reviews
-		user_comment_list = StepicComment.objects(user=self)
-		for comment in user_comment_list:
-			comment.user_reputation = self.reputation
-			comment.progress = round((self.courses[str(comment.course.stepic_id)].score / comment.course.score * 100), 2) if comment.course.score else 0
-			comment.save()
-		user_review_list = StepicReview.objects(user=self)
-		for review in user_review_list:
-			review.user_reputation = self.reputation
-			review.progress = round((self.courses[str(review.course.stepic_id)].score / review.course.score * 100), 2) if review.course.score else 0
-			review.save()
+		# user_comment_list = StepicComment.objects(user=self)
+		# for comment in user_comment_list:
+		# 	comment.user_reputation = self.reputation
+		# 	comment.progress = round((self.courses[str(comment.course.stepic_id)].score / comment.course.score * 100), 2) if comment.course.score else 0
+		# 	comment.save()
+		# user_review_list = StepicReview.objects(user=self)
+		# for review in user_review_list:
+		# 	review.user_reputation = self.reputation
+		# 	review.progress = round((self.courses[str(review.course.stepic_id)].score / review.course.score * 100), 2) if review.course.score else 0
+		# 	review.save()
 
 		print('Update stepic user #{}'.format(self.serial_id))
 
@@ -410,14 +418,16 @@ class StepicTeacher(BaseTeacher):
 		comment_list = comment_list.filter(Q(time__gte=filtration_set.date_from) & Q(time__lte=filtration_set.date_to))
 		# 2. Ответы
 		comment_list = comment_list.filter(Q(reply_count__gte=filtration_set.replies_from) & Q(reply_count__lte=filtration_set.replies_to))
-		# 3. Прогресс
-		comment_list = comment_list.filter(Q(progress__gte=filtration_set.progress_from) & Q(progress__lte=filtration_set.progress_to))
 		# 4. Репутация
 		comment_list = comment_list.filter(Q(user_reputation__gte=filtration_set.reputation_from) & Q(user_reputation__lte=filtration_set.reputation_to))
 		# 6. Автор
 		comment_list = comment_list.filter(user=filtration_set.author) if filtration_set.author else comment_list
 		# 7. Статус
 		comment_list = comment_list.filter(status=filtration_set.comment_status) if filtration_set.comment_status != 'all' else comment_list
+		# 3. Прогресс
+		for comment in comment_list:
+			comment.update_comment_progress().save()
+		comment_list = comment_list.filter(Q(progress__gte=filtration_set.progress_from) & Q(progress__lte=filtration_set.progress_to))
 		# sort
 		comment_list = comment_list.order_by(*filtration_set.get_sort_args_list())
 
