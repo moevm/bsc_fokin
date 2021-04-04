@@ -1,5 +1,6 @@
 from datetime import date, datetime, timedelta
 from dateutil.parser import parse
+from flask_login import current_user
 from mongoengine.queryset.visitor import Q
 from app.create_app import db
 from app.main.models import BaseTeacher
@@ -105,10 +106,10 @@ class StepicFiltrationSet(FiltrationSet):
 
 	# url параметры
 	def get_url(self):
-		url = '?{}&{}&{}&{}&{}'.format(
+		url = '?{}&{}&{}&{}&{}&{}&{}'.format(
 			self.get_date_args_url(),
 			self.get_replies_args_url(),
-			# self.get_progress_args_url(),
+			self.get_progress_args_url(),
 			self.get_reputation_args_url(),
 			self.get_courses_args_url(),
 			self.get_author_args_url(),
@@ -160,6 +161,7 @@ class StepicReview(db.Document):
 	text = db.StringField(default='')
 	score = db.IntField(default=0)
 	status = db.StringField(default='new')
+	progress = db.FloatField(required=True)
 
 	def get_info(self):
 		return self.to_json()
@@ -171,6 +173,7 @@ class StepicReview(db.Document):
 		self.text=comment_info['text']
 		self.score=comment_info['score']
 		self.status = self.status if self.status else 'new' # Иначе не работает фильтрация по дефолтному значению
+		self.progress = 0
 
 		print('Update stepic review #{}'.format(self.serial_id))
 
@@ -199,6 +202,7 @@ class StepicComment(db.Document):
 	epic_count = db.IntField(default=0)
 	abuse_count = db.IntField(default=0)
 	status = db.StringField(default='new')
+	progress = db.FloatField(required=True)
 
 	def get_info(self):
 		return self.to_json()
@@ -221,6 +225,7 @@ class StepicComment(db.Document):
 		self.epic_count = comment_info['epic_count']
 		self.abuse_count = comment_info['abuse_count']
 		self.status = self.status if self.status else 'new' # Иначе не работает фильтрация по дефолтному значению
+		self.progress = 0
 
 		print('Update stepic comment #{}'.format(self.serial_id))
 
@@ -251,6 +256,8 @@ class StepicUserStep(db.EmbeddedDocument):
 
 
 class StepicUserCourse(db.EmbeddedDocument):
+	user = db.ReferenceField('StepicUser')
+	course = db.ReferenceField('StepicCourse')
 	score = db.IntField(default=0)
 	steps = db.MapField(db.EmbeddedDocumentField('StepicUserStep'))
 
@@ -267,6 +274,7 @@ class StepicUserCourse(db.EmbeddedDocument):
 
 	def update_step_grades(self, course_grades):
 		self.score=course_grades.get('score')
+
 		results = course_grades.get('results')
 		for step_grades in results:
 			step_id = str(results.get(step_grades).get('step_id'))
@@ -317,14 +325,18 @@ class StepicUser(db.Document):
 		self.full_name=user_info.get('full_name')
 		self.avatar_url=user_info.get('avatar')
 		self.reputation=user_info.get('reputation')
-		# update reputation in users comments and reviews
+		# update user course grades
+		self.__update_course_grades()
+		# update reputation, progress in users comments and reviews
 		user_comment_list = StepicComment.objects(user=self)
 		for comment in user_comment_list:
 			comment.user_reputation = self.reputation
+			comment.progress = round((self.courses[str(comment.course.stepic_id)].score / comment.course.score * 100), 2) if comment.course.score else 0
 			comment.save()
 		user_review_list = StepicReview.objects(user=self)
 		for review in user_review_list:
 			review.user_reputation = self.reputation
+			review.progress = round((self.courses[str(review.course.stepic_id)].score / review.course.score * 100), 2) if review.course.score else 0
 			review.save()
 
 		print('Update stepic user #{}'.format(self.serial_id))
@@ -332,25 +344,29 @@ class StepicUser(db.Document):
 		return self
 
 	def add_step(self, comment_info):
-		course_id = str(comment_info.get('course_id'))
-		user_course = self.courses.get(course_id)
+		course_id = comment_info.get('course_id')
+		user_course = self.courses.get(str(course_id))
 		if user_course:
 			user_course.add_step(comment_info)
 		else:
-			self.courses[course_id]=StepicUserCourse().add_step(comment_info)
+			self.courses[str(course_id)]=StepicUserCourse(
+				user=self,
+				course=StepicCourse.objects(stepic_id=course_id).first()).add_step(comment_info)
 
 		return self
 
 	def add_course(self, review_info):
-		course_id = str(review_info.get('course_id'))
-		user_course = self.courses.get(course_id)
+		course_id = review_info.get('course_id')
+		user_course = self.courses.get(str(course_id))
 		if not user_course:
-			self.courses[course_id]=StepicUserCourse()
+			self.courses[str(course_id)]=StepicUserCourse(
+				user=self,
+				course=StepicCourse.objects(stepic_id=course_id).first())
 
 		return self
 
-	def update_course_grades(self, token):
-		stepic_api = StepicApi(token)
+	def __update_course_grades(self):
+		stepic_api = StepicApi(current_user.token)
 		for course_id in self.courses:
 			course_grades = stepic_api.get_user_course_grades(course_id, self.stepic_id)
 			if course_grades:
@@ -394,7 +410,8 @@ class StepicTeacher(BaseTeacher):
 		comment_list = comment_list.filter(Q(time__gte=filtration_set.date_from) & Q(time__lte=filtration_set.date_to))
 		# 2. Ответы
 		comment_list = comment_list.filter(Q(reply_count__gte=filtration_set.replies_from) & Q(reply_count__lte=filtration_set.replies_to))
-		# 3. Прогресс - отключено
+		# 3. Прогресс
+		comment_list = comment_list.filter(Q(progress__gte=filtration_set.progress_from) & Q(progress__lte=filtration_set.progress_to))
 		# 4. Репутация
 		comment_list = comment_list.filter(Q(user_reputation__gte=filtration_set.reputation_from) & Q(user_reputation__lte=filtration_set.reputation_to))
 		# 6. Автор
@@ -413,7 +430,8 @@ class StepicTeacher(BaseTeacher):
 		review_list = StepicReview.objects(course__in=filtration_set.course_list) if filtration_set.course_list else StepicReview.objects()
 		# 1. Дата
 		review_list = review_list.filter(Q(create_date__gte=filtration_set.date_from) & Q(create_date__lte=filtration_set.date_to))
-		# 2. Прогресс - отключено
+		# 2. Прогресс
+		review_list = review_list.filter(Q(progress__gte=filtration_set.progress_from) & Q(progress__lte=filtration_set.progress_to))
 		# 3. Репутация
 		review_list = review_list.filter(Q(user_reputation__gte=filtration_set.reputation_from) & Q(user_reputation__lte=filtration_set.reputation_to))
 		# sort

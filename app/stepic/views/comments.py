@@ -30,8 +30,6 @@ def show_all_comments(page=1):
 		return redirect('{}{}'.format(url_for('.show_all_comments', page=page), current_user.filtration_set.get_url()))
 
 	comment_list = current_user.filter_and_sort_comments().paginate(page=page, per_page=COMMENTS_PER_PAGE)
-	for comment in comment_list.items:
-		comment.user.update_course_grades(current_user.token).save()
 
 	return render_template(
 		"stepic/comments.html",
