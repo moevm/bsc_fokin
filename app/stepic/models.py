@@ -179,6 +179,12 @@ class StepicReview(db.Document):
 
 		return self
 
+	def update_review_progress(self):
+		self.user_reputation = self.user.reputation
+		self.progress = round((self.user.courses[str(self.course.stepic_id)].score / self.course.score * 100), 2) if self.course.score else 0
+
+		return self
+
 
 class StepicComment(db.Document):
 	serial_id = db.SequenceField()
@@ -239,8 +245,6 @@ class StepicComment(db.Document):
 	def update_comment_progress(self):
 		self.user_reputation = self.user.reputation
 		self.progress = round((self.user.courses[str(self.course.stepic_id)].score / self.course.score * 100), 2) if self.course.score else 0
-		if not self.has_parent:
-			self.discussion.modify(progress=self.progress)
 
 		return self
 
@@ -335,17 +339,6 @@ class StepicUser(db.Document):
 		self.reputation=user_info.get('reputation')
 		# update user course grades
 		self.__update_course_grades()
-		# update reputation, progress in users comments and reviews
-		# user_comment_list = StepicComment.objects(user=self)
-		# for comment in user_comment_list:
-		# 	comment.user_reputation = self.reputation
-		# 	comment.progress = round((self.courses[str(comment.course.stepic_id)].score / comment.course.score * 100), 2) if comment.course.score else 0
-		# 	comment.save()
-		# user_review_list = StepicReview.objects(user=self)
-		# for review in user_review_list:
-		# 	review.user_reputation = self.reputation
-		# 	review.progress = round((self.courses[str(review.course.stepic_id)].score / review.course.score * 100), 2) if review.course.score else 0
-		# 	review.save()
 
 		print('Update stepic user #{}'.format(self.serial_id))
 
@@ -440,10 +433,12 @@ class StepicTeacher(BaseTeacher):
 		review_list = StepicReview.objects(course__in=filtration_set.course_list) if filtration_set.course_list else StepicReview.objects()
 		# 1. Дата
 		review_list = review_list.filter(Q(create_date__gte=filtration_set.date_from) & Q(create_date__lte=filtration_set.date_to))
-		# 2. Прогресс
-		review_list = review_list.filter(Q(progress__gte=filtration_set.progress_from) & Q(progress__lte=filtration_set.progress_to))
 		# 3. Репутация
 		review_list = review_list.filter(Q(user_reputation__gte=filtration_set.reputation_from) & Q(user_reputation__lte=filtration_set.reputation_to))
+		# 2. Прогресс
+		for review in review_list:
+			review.update_review_progress().save()
+		review_list = review_list.filter(Q(progress__gte=filtration_set.progress_from) & Q(progress__lte=filtration_set.progress_to))
 		# sort
 		review_list = review_list.order_by(*filtration_set.get_sort_args_list())
 
