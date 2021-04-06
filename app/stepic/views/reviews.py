@@ -25,8 +25,6 @@ def show_all_reviews(page=1):
 		return redirect('{}{}'.format(url_for('.show_all_reviews', page=page), current_user.filtration_set.get_url()))
 
 	review_list = current_user.filter_and_sort_reviews().paginate(page=page, per_page=REVIEWS_PER_PAGE)
-	for review in review_list.items:
-		review.user.update_course_grades(current_user.token).save()
 
 	return render_template(
 		"stepic/reviews.html",

@@ -154,7 +154,6 @@ class StepicReview(db.Document):
 	serial_id = db.SequenceField()
 	stepic_id = db.IntField(unique=True)
 	user = db.ReferenceField('StepicUser')
-	user_reputation = db.IntField(default=0)
 	course = db.ReferenceField('StepicCourse')
 	create_date = db.IntField(default=0)
 	update_date = db.IntField(default=0)
@@ -162,26 +161,28 @@ class StepicReview(db.Document):
 	score = db.IntField(default=0)
 	status = db.StringField(default='new')
 	progress = db.FloatField(required=True)
+	user_reputation = db.IntField(required=True)
 
 	def get_info(self):
 		return self.to_json()
 
 	def update_review(self, comment_info):
-		self.stepic_id=comment_info['stepic_id']
-		self.create_date=parse(comment_info['create_date']).timestamp()
-		self.update_date=parse(comment_info['update_date']).timestamp()
-		self.text=comment_info['text']
-		self.score=comment_info['score']
+		self.stepic_id=comment_info.get('stepic_id')
+		self.create_date=parse(comment_info.get('create_date')).timestamp()
+		self.update_date=parse(comment_info.get('update_date')).timestamp()
+		self.text=comment_info.get('text')
+		self.score=comment_info.get('score')
 		self.status = self.status if self.status else 'new' # Иначе не работает фильтрация по дефолтному значению
 		self.progress = 0
+		self.user_reputation = 0
 
 		print('Update stepic review #{}'.format(self.serial_id))
 
 		return self
 
 	def update_review_progress(self):
-		self.user_reputation = self.user.reputation
 		self.progress = round((self.user.courses[str(self.course.stepic_id)].score / self.course.score * 100), 2) if self.course.score else 0
+		self.user_reputation = self.user.reputation if self.user.reputation else 0
 
 		return self
 
@@ -192,14 +193,13 @@ class StepicComment(db.Document):
 	parent_id = db.IntField()
 	step_id = db.IntField()
 	user = db.ReferenceField('StepicUser')
-	user_reputation = db.IntField(default=0)
 	course = db.ReferenceField('StepicCourse')
 	user_role = db.StringField(default='')
 	time = db.IntField(default=0)
 	last_time = db.IntField(default=0)
 	text = db.StringField(default='')
 	# replies = db.ListField(db.ReferenceField('self'))
-	reply_count = db.IntField(default=0)
+	reply_count = db.IntField(required=True)
 	is_deleted = db.BooleanField(default=False)
 	is_pinned = db.BooleanField(default=False)
 	is_staff_replied = db.BooleanField(default=False)
@@ -209,29 +209,31 @@ class StepicComment(db.Document):
 	abuse_count = db.IntField(default=0)
 	status = db.StringField(default='new')
 	progress = db.FloatField(required=True)
+	user_reputation = db.IntField(required=True)
 
 	def get_info(self):
 		return self.to_json()
 
 	def update_comment(self, comment_info):
-		self.stepic_id = comment_info['stepic_id']
-		self.parent_id = comment_info['parent_id']
-		self.step_id = comment_info['step_id']
-		self.user_role = comment_info['user_role']
-		self.time = parse(comment_info['time']).timestamp()
-		self.last_time = parse(comment_info['last_time']).timestamp()
-		self.text = comment_info['text']
-		# self.replies = comment_info['replies']
-		self.reply_count = comment_info['reply_count']
-		self.is_deleted = comment_info['is_deleted']
-		self.is_pinned = comment_info['is_pinned']
-		self.is_staff_replied = comment_info['is_staff_replied']
-		self.is_reported = comment_info['is_reported']
-		self.attachments = comment_info['attachments']
-		self.epic_count = comment_info['epic_count']
-		self.abuse_count = comment_info['abuse_count']
+		self.stepic_id = comment_info.get('stepic_id')
+		self.parent_id = comment_info.get('parent_id')
+		self.step_id = comment_info.get('step_id')
+		self.user_role = comment_info.get('user_role')
+		self.time = parse(comment_info.get('time')).timestamp()
+		self.last_time = parse(comment_info.get('last_time')).timestamp()
+		self.text = comment_info.get('text')
+		# self.replies = comment_info.get('replies')
+		self.reply_count = comment_info.get('reply_count') if comment_info.get('reply_count') else 0 # Иначе не работает фильтрация по дефолтному значению
+		self.is_deleted = comment_info.get('is_deleted')
+		self.is_pinned = comment_info.get('is_pinned')
+		self.is_staff_replied = comment_info.get('is_staff_replied')
+		self.is_reported = comment_info.get('is_reported')
+		self.attachments = comment_info.get('attachments')
+		self.epic_count = comment_info.get('epic_count')
+		self.abuse_count = comment_info.get('abuse_count')
 		self.status = self.status if self.status else 'new' # Иначе не работает фильтрация по дефолтному значению
 		self.progress = 0
+		self.user_reputation = 0
 
 		print('Update stepic comment #{}'.format(self.serial_id))
 
@@ -243,8 +245,8 @@ class StepicComment(db.Document):
 		return self
 
 	def update_comment_progress(self):
-		self.user_reputation = self.user.reputation
 		self.progress = round((self.user.courses[str(self.course.stepic_id)].score / self.course.score * 100), 2) if self.course.score else 0
+		self.user_reputation = self.user.reputation if self.user.reputation else 0
 
 		return self
 
@@ -260,9 +262,9 @@ class StepicUserStep(db.EmbeddedDocument):
 		return self.to_json()
 
 	def update_user_step(self, step_grades):
-		self.score=step_grades['score']
-		self.is_passed=step_grades['is_passed']
-		self.total_submissions=step_grades['total_submissions']
+		self.score=step_grades.get('score')
+		self.is_passed=step_grades.get('is_passed')
+		self.total_submissions=step_grades.get('total_submissions')
 
 		return self
 
@@ -327,7 +329,7 @@ class StepicUser(db.Document):
 	stepic_id = db.IntField(unique=True)
 	full_name = db.StringField(default='')
 	avatar_url = db.StringField(default='')
-	reputation = db.IntField(default=0)
+	reputation = db.IntField()
 	courses = db.MapField(db.EmbeddedDocumentField('StepicUserCourse'))
 
 	def get_info(self):
