@@ -14,7 +14,7 @@
 					<li class="list-group-item">
 						<b> Прогресс курса: </b>
 						<div class="progress">
-							<div class="progress-bar" role="progressbar"
+							<div class="progress-bar bg-info" role="progressbar"
 								style="width: {{ "%.2f" % (review.user.courses[review.course.stepic_id | string].score / review.course.score * 100) }}%"
 								aria-valuenow="{{ "%.2f" % (review.user.courses[review.course.stepic_id | string].score / review.course.score * 100) }}"
 								aria-valuemin="0"
@@ -47,7 +47,7 @@
 					<p class="card-text"> {{ review.text | safe }} </p>
 				</div>
 				<div class="card-footer text-right">
-					<a href="{{ url_for('stepic.show_review', step_id=review.step_id, review_id=review.stepic_id) }}" class="badge badge-success"> Ссылка на отзыв </a>
+					<a href="{{ url_for('stepic.show_review', step_id=review.step_id, review_id=review.stepic_id) }}" class="badge badge-secondary"> Ссылка на отзыв </a>
 				</div>
 			</div>
 		</div>

@@ -14,7 +14,7 @@ ORDER_PARAMS = [
 
 COMMENT_STATUSES = {
 	'new': {'label': 'Новое', 'color': 'info'},
-	'in progress': {'label': 'В обработке', 'color': 'secondary'},
+	'in progress': {'label': 'В обработке', 'color': 'warning'},
 	'closed': {'label': 'Закрыто', 'color': 'success'}}
 
 
@@ -89,7 +89,7 @@ def update_comments():
 def update_comment_status(comment_id):
 	redirect_url = request.args.get('redirect_url')
 	status_info = request.get_json()
-	comment = MoodlePost.objects(stepic_id=comment_id).first()
+	comment = StepicComment.objects(stepic_id=comment_id).first()
 	comment.update_comment_status(status_info).save()
 
 	return jsonify(redirect_url=redirect_url)

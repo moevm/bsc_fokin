@@ -159,7 +159,6 @@ class StepicReview(db.Document):
 	update_date = db.IntField(default=0)
 	text = db.StringField(default='')
 	score = db.IntField(default=0)
-	status = db.StringField(default='new')
 	progress = db.FloatField(required=True)
 	user_reputation = db.IntField(required=True)
 
@@ -172,7 +171,6 @@ class StepicReview(db.Document):
 		self.update_date=parse(comment_info.get('update_date')).timestamp()
 		self.text=comment_info.get('text')
 		self.score=comment_info.get('score')
-		self.status = self.status if self.status else 'new' # Иначе не работает фильтрация по дефолтному значению
 		self.progress = 0
 		self.user_reputation = 0
 
@@ -200,14 +198,14 @@ class StepicComment(db.Document):
 	text = db.StringField(default='')
 	# replies = db.ListField(db.ReferenceField('self'))
 	reply_count = db.IntField(required=True)
-	is_deleted = db.BooleanField(default=False)
+	is_deleted = db.BooleanField(required=True)
 	is_pinned = db.BooleanField(default=False)
 	is_staff_replied = db.BooleanField(default=False)
 	is_reported = db.BooleanField(default=False)
-	attachments = db.ListField(default=[])
+	# attachments = db.ListField(default=[])
 	epic_count = db.IntField(default=0)
 	abuse_count = db.IntField(default=0)
-	status = db.StringField(default='new')
+	status = db.StringField(required=True)
 	progress = db.FloatField(required=True)
 	user_reputation = db.IntField(required=True)
 
@@ -224,7 +222,7 @@ class StepicComment(db.Document):
 		self.text = comment_info.get('text')
 		# self.replies = comment_info.get('replies')
 		self.reply_count = comment_info.get('reply_count') if comment_info.get('reply_count') else 0 # Иначе не работает фильтрация по дефолтному значению
-		self.is_deleted = comment_info.get('is_deleted')
+		self.is_deleted = comment_info.get('is_deleted') if comment_info.get('is_deleted') else False
 		self.is_pinned = comment_info.get('is_pinned')
 		self.is_staff_replied = comment_info.get('is_staff_replied')
 		self.is_reported = comment_info.get('is_reported')

@@ -36,7 +36,9 @@
 		</h2>
 	</div>
 	<div class="col-sm-4" style="text-align: center;">
-		<button class="btn btn-warning update_btn" type="button" href="{{ url_for('stepic.update_reviews') }}">
+		<button class="btn btn-info update_btn" type="button" href="{{ url_for('stepic.update_reviews') }}"
+						data-bs-toggle="tooltip" data-bs-html="true"
+						title="Процесс импорта отзывов занимает некоторое время.&#10;Не покидайте страницу до окончания загрузки.">>
 			<span class="spinner-border spinner-border-sm update_btn_spinner" role="status" aria-hidden="true" style="display: none"> </span>
 			Обновить
 		</button>

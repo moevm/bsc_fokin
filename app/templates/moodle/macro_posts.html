@@ -16,7 +16,7 @@
 					<li class="list-group-item">
 						<b> Прогресс курса: </b>
 						<div class="progress">
-							<div class="progress-bar" role="progressbar" style="width: {{ post.progress }}%">
+							<div class="progress-bar bg-info" role="progressbar" style="width: {{ post.progress }}%">
 								{{ post.progress }} %
 							</div>
 						</div>
@@ -52,7 +52,7 @@
 					<p class="card-text"> {{ post.message | safe }} </p>
 				</div>
 				<div class="card-footer text-right">
-					<a href="{{ url_for('moodle.show_discussion_tree', discussion_id=post.discussion.discussion_id, post_id=post.moodle_id) }}#{{ post.moodle_id }}" class="badge badge-warning"> Подробнее </a>
+					<a href="{{ url_for('moodle.show_discussion_tree', discussion_id=post.discussion.discussion_id, post_id=post.moodle_id) }}#{{ post.moodle_id }}" class="badge badge-secondary"> Подробнее </a>
 					<div class="btn-group" role="group">
 						<a href="#" class="badge badge-{{ post_status_dict[post.status]['color'] }} post_status" post_status="{{ post.status }}"> {{ post_status_dict[post.status]['label'] }} </a>
 						<div class="btn-group" role="group">

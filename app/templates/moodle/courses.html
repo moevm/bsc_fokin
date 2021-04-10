@@ -31,7 +31,10 @@
 		{% endfor %}
 	</div>
 	<div class="col-sm-4" style="text-align: center;">
-		<button class="btn btn-warning update_btn" type="button" href="{{ url_for('moodle.update_courses') }}">
+		<button class="btn btn-info update_btn" type="button"
+						href="{{ url_for('moodle.update_courses') }}"
+						data-bs-toggle="tooltip" data-bs-html="true"
+						title="Процесс импорта курсов может занять некоторое время.&#10;Не покидайте страницу до окончания загрузки.">
 			<span class="spinner-border spinner-border-sm update_btn_spinner" role="status" aria-hidden="true" style="display: none"> </span>
 			Обновить
 		</button>

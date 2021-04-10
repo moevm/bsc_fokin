@@ -19,8 +19,8 @@
 				</select>
 			</div>
 			<div class="modal-footer">
-				<a class="btn btn-secondary text-white" data-dismiss="modal"> Закрыть </a>
-				<a id="import_btn" class="btn btn-primary text-white" redirect_url='{{ url_for(redirect_url) }}'> Применить </a>
+				<a class="btn btn-danger text-white" data-dismiss="modal"> Закрыть </a>
+				<a id="import_btn" class="btn btn-success text-white" redirect_url='{{ url_for(redirect_url) }}'> Применить </a>
 			</div>
 		</div>
 	</div>
@@ -41,8 +41,8 @@
 				<input id="filtration_set_title" type="text" name="" value="">
 			</div>
 			<div class="modal-footer">
-				<a class="btn btn-secondary text-white" data-dismiss="modal"> Закрыть </a>
-				<a id="export_btn" class="btn btn-primary text-white" redirect_url='{{ url_for(redirect_url, page=page) }}'> Применить </a>
+				<a class="btn btn-danger text-white" data-dismiss="modal"> Закрыть </a>
+				<a id="export_btn" class="btn btn-success text-white" redirect_url='{{ url_for(redirect_url, page=page) }}'> Применить </a>
 			</div>
 		</div>
 	</div>
@@ -152,9 +152,19 @@
 	<!-- Блок с кнопками -->
 	<div class="card">
 		<div class="card-body bg-light" style="display: flex; flex-direction: column; justify-content: space-evenly">
-			<a href="#" class="btn btn-warning" data-toggle="modal" data-target="#import_modal"> Импорт </a>
-			<a href="#" class="btn btn-primary" data-toggle="modal" data-target="#export_modal"> Сохранить </a>
-			<a href="#" id="search_btn" class="btn btn-success" redirect_url='{{ url_for(redirect_url) }}'> Поиск </a>
+			<div class="" style="display: flex; flex-direction: raw; justify-content: space-evenly">
+				<a href="#" class="btn btn-warning" data-toggle="modal" data-target="#export_modal"
+					 data-bs-toggle="tooltip" data-bs-html="true"
+					 title="Сохранить настройки фильтра">
+					<i class="fa fa-cloud-upload" aria-hidden="true"></i>
+				</a>
+				<a href="#" class="btn btn-success" data-toggle="modal" data-target="#import_modal"
+					 data-bs-toggle="tooltip" data-bs-html="true"
+					 title="Импортировать настройки фильтра">
+					<i class="fa fa-cloud-download" aria-hidden="true"></i>
+				</a>
+			</div>
+			<a href="#" id="search_btn" class="btn btn-primary" redirect_url='{{ url_for(redirect_url) }}'> Поиск </a>
 		</div>
 	</div>
 

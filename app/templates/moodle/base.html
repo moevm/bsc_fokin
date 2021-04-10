@@ -6,7 +6,8 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
 	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css" integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
-
+	<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+	
 	{% block extra_css %} {% endblock %}
 
 	<title>
@@ -18,13 +19,13 @@
 <body>
 
 	<div class="d-flex flex-column flex-md-row align-items-center p-3 py-4 px-md-4 mb-3 border-bottom shadow-sm" style="background-color: #f98012">
-		<a class="btn btn-secondary text-white my-2 my-md-0 mr-md-3" href="{{ url_for('main.index') }}"> Главная </a>
-		<a class="btn btn-success text-white mr-md-auto" href="{{ url_for('moodle.show_moodle_gen_page') }}"> Генератор </a>
+		<a class="btn btn-secondary text-white my-2 my-md-0 mr-md-3 mr-md-auto" href="{{ url_for('main.index') }}"> Главная </a>
+		<!-- <a class="btn btn-success text-white mr-md-auto" href="{{ url_for('moodle.show_moodle_gen_page') }}"> Генератор </a> -->
 		<nav class="my-2 my-md-0 mr-md-3">
-			<a class="btn btn-primary text-white" href="{{ url_for('moodle.show_all_posts') }}"> Посты </a>
-			<a class="btn btn-warning text-white" href="{{ url_for('moodle.show_all_discussions') }}"> Обсуждения </a>
-			<a class="btn btn-info text-white" href="{{ url_for('moodle.show_all_courses') }}"> Курсы </a>
-			<a class="btn btn-light" disabled>
+			<a class="btn btn-secondary text-white" href="{{ url_for('moodle.show_all_posts') }}"> Посты </a>
+			<a class="btn btn-secondary text-white" href="{{ url_for('moodle.show_all_discussions') }}"> Обсуждения </a>
+			<a class="btn btn-secondary text-white" href="{{ url_for('moodle.show_all_courses') }}"> Курсы </a>
+			<a class="btn btn-light">
 				<img src="{{ current_user.user_picture_url }}" style="height: 1.25rem;"> {{ current_user.full_name }}
 			</a>
 			<a class="btn btn-danger text-white" href="{{ url_for('moodle.logout') }}"> Выйти </a>

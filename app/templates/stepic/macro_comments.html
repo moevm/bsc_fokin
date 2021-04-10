@@ -16,7 +16,7 @@
 					<li class="list-group-item">
 						<b> Прогресс курса: </b>
 						<div class="progress">
-							<div class="progress-bar" role="progressbar"
+							<div class="progress-bar bg-info" role="progressbar"
 								style="width: {{ "%.2f" % (comment.user.courses[comment.course.stepic_id | string].score / comment.course.score * 100) }}%"
 								aria-valuenow="{{ "%.2f" % (comment.user.courses[comment.course.stepic_id | string].score / comment.course.score * 100) }}"
 								aria-valuemin="0"
@@ -57,7 +57,7 @@
 					<p class="card-text"> {{ comment.text | safe }} </p>
 				</div>
 				<div class="card-footer text-right">
-					<a href="{{ url_for('stepic.show_comment', step_id=comment.step_id, comment_id=comment.stepic_id) }}" class="badge badge-success"> Ссылка на обсуждение </a>
+					<a href="{{ url_for('stepic.show_comment', step_id=comment.step_id, comment_id=comment.stepic_id) }}" class="badge badge-secondary"> Ссылка на обсуждение </a>
 					<div class="btn-group" role="group">
 						<a href="#" class="badge badge-{{ comment_status_dict[comment.status]['color'] }} comment_status" comment_status="{{ comment.status }}"> {{ comment_status_dict[comment.status]['label'] }} </a>
 						<div class="btn-group" role="group">

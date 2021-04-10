@@ -14,7 +14,7 @@ ORDER_PARAMS = [
 
 POST_STATUSES = {
 	'new': {'label': 'Новое', 'color': 'info'},
-	'in progress': {'label': 'В обработке', 'color': 'secondary'},
+	'in progress': {'label': 'В обработке', 'color': 'warning'},
 	'closed': {'label': 'Закрыто', 'color': 'success'}}
 
 
